@@ -5,7 +5,7 @@ world_frame: lidar
 
 lidar_filter_num: 3
 lidar_min_range: 0.5
-lidar_max_range: 20.0
+lidar_max_range: 30.0
 scan_resolution: 0.15
 map_resolution: 0.3
 

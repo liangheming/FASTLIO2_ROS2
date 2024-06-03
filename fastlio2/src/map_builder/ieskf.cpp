@@ -103,6 +103,7 @@ void IESKF::update()
         b.block<12, 1>(0, 0) += shared_data.b;
 
         delta = -H.inverse() * b;
+
         m_x += delta;
         shared_data.iter_num += 1;
 

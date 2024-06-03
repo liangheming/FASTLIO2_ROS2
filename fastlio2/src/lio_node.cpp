@@ -3,6 +3,7 @@
 #include <queue>
 #include <memory>
 #include <iostream>
+#include <chrono>
 // #include <filesystem>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
@@ -242,7 +243,16 @@ public:
         if (!syncPackage())
             return;
 
+        // auto start = std::chrono::high_resolution_clock::now();
+
         m_builder->process(m_package);
+
+        // auto end = std::chrono::high_resolution_clock::now();
+
+        // std::chrono::duration<double> duration = end - start;
+
+        // std::cout << RED << std::fixed << std::setprecision(4) << "duration: " << duration.count() << " s" << RESET << std::endl;
+
         if (m_builder->status() != BuilderStatus::MAPPING)
             return;
 

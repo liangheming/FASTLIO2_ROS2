@@ -112,7 +112,9 @@ void IESKF::update()
     }
 
     M21D L = M21D::Identity();
-    L.block<3, 3>(0, 0) = JrInv(delta.segment<3>(0));
-    L.block<3, 3>(6, 6) = JrInv(delta.segment<3>(6));
+    // L.block<3, 3>(0, 0) = JrInv(delta.segment<3>(0));
+    // L.block<3, 3>(6, 6) = JrInv(delta.segment<3>(6));
+    L.block<3, 3>(0, 0) = Jr(delta.segment<3>(0));
+    L.block<3, 3>(6, 6) = Jr(delta.segment<3>(6));
     m_P = L * H.inverse() * L.transpose();
 }

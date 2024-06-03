@@ -301,6 +301,7 @@ private:
     bool same_point(PointType a, PointType b);
     float calc_dist(PointType a, PointType b);
     float calc_box_dist(KD_TREE_NODE *node, PointType point);
+    void ClearTree();
     static bool point_cmp_x(PointType a, PointType b);
     static bool point_cmp_y(PointType a, PointType b);
     static bool point_cmp_z(PointType a, PointType b);

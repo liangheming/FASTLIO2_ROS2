@@ -74,7 +74,7 @@ public:
         YAML::Node config = YAML::LoadFile(config_path);
         if (!config)
         {
-            RCLCPP_WARN(this->get_logger(), "FAIL TO LOAD YAML FILE！");
+            RCLCPP_WARN(this->get_logger(), "FAIL TO LOAD YAML FILE!");
             return;
         }
 

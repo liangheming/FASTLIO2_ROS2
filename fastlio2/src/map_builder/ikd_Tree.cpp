@@ -1,7 +1,7 @@
 #include "ikd_Tree.h"
 
 /*
-Description: ikd-Tree: an incremental k-d tree for robotic applications 
+Description: ikd-Tree: an incremental k-d tree for robotic applications
 Author: Yixi Cai
 email: yixicai@connect.hku.hk
 */
@@ -26,8 +26,6 @@ KD_TREE<PointType>::~KD_TREE()
     PointVector().swap(PCL_Storage);
     Rebuild_Logger.clear();
 }
-
-
 
 template <typename PointType>
 void KD_TREE<PointType>::InitializeKDTree(float delete_param, float balance_param, float box_length)
@@ -1299,13 +1297,15 @@ void KD_TREE<PointType>::Search_by_radius(KD_TREE_NODE *root, PointType point, f
     range_center.y = (root->node_range_y[0] + root->node_range_y[1]) * 0.5;
     range_center.z = (root->node_range_z[0] + root->node_range_z[1]) * 0.5;
     float dist = sqrt(calc_dist(range_center, point));
-    if (dist > radius + sqrt(root->radius_sq)) return;
-    if (dist <= radius - sqrt(root->radius_sq)) 
+    if (dist > radius + sqrt(root->radius_sq))
+        return;
+    if (dist <= radius - sqrt(root->radius_sq))
     {
         flatten(root, Storage, NOT_RECORD);
         return;
     }
-    if (!root->point_deleted && calc_dist(root->point, point) <= radius * radius){
+    if (!root->point_deleted && calc_dist(root->point, point) <= radius * radius)
+    {
         Storage.push_back(root->point);
     }
     if ((Rebuild_Ptr == nullptr) || root->left_son_ptr != *Rebuild_Ptr)
@@ -1327,7 +1327,7 @@ void KD_TREE<PointType>::Search_by_radius(KD_TREE_NODE *root, PointType point, f
         pthread_mutex_lock(&search_flag_mutex);
         Search_by_radius(root->right_son_ptr, point, radius, Storage);
         pthread_mutex_unlock(&search_flag_mutex);
-    }    
+    }
     return;
 }
 
@@ -1606,7 +1606,7 @@ void KD_TREE<PointType>::Update(KD_TREE_NODE *root)
     float x_L = (root->node_range_x[1] - root->node_range_x[0]) * 0.5;
     float y_L = (root->node_range_y[1] - root->node_range_y[0]) * 0.5;
     float z_L = (root->node_range_z[1] - root->node_range_z[0]) * 0.5;
-    root->radius_sq = x_L*x_L + y_L * y_L + z_L * z_L;
+    root->radius_sq = x_L * x_L + y_L * y_L + z_L * z_L;
     if (left_son_ptr != nullptr)
         left_son_ptr->father_ptr = root;
     if (right_son_ptr != nullptr)
@@ -1714,15 +1714,19 @@ bool KD_TREE<PointType>::point_cmp_y(PointType a, PointType b) { return a.y < b.
 template <typename PointType>
 bool KD_TREE<PointType>::point_cmp_z(PointType a, PointType b) { return a.z < b.z; }
 
+template <typename PointType>
+void KD_TREE<PointType>::ClearTree()
+{
+    Delete_Storage_Disabled = true;
+    delete_tree_nodes(&Root_Node);
+    PointVector().swap(PCL_Storage);
+    Rebuild_Logger.clear();
+}
 // Manual heap
 
-
-
 // manual queue
-
 
 // Manual Instatiations
 template class KD_TREE<pcl::PointXYZ>;
 template class KD_TREE<pcl::PointXYZI>;
 template class KD_TREE<pcl::PointXYZINormal>;
-

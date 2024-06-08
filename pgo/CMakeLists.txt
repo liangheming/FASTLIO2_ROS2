@@ -17,12 +17,13 @@ find_package(ament_cmake REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(tf REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(message_filters REQUIRED)
+find_package(rclcpp_components REQUIRED)
 
 
 find_package(Eigen3 REQUIRED)
@@ -33,6 +34,17 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
 )
+
+set(SRC_LIST src/pgos/commons.cpp
+             src/pgos/simple_pgo.cpp)
+
+add_executable(pgo_node src/pgo_node.cpp ${SRC_LIST})
+ament_target_dependencies(pgo_node rclcpp std_msgs sensor_msgs nav_msgs message_filters pcl_conversions tf2_ros geometry_msgs)
+target_link_libraries(pgo_node ${PCL_LIBRARIES})
+
+
+install(TARGETS pgo_node DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 
 if(BUILD_TESTING)

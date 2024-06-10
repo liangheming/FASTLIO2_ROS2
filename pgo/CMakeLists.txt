@@ -24,6 +24,7 @@ find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 find_package(GTSAM REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -39,7 +40,7 @@ set(SRC_LIST src/pgos/commons.cpp
              src/pgos/simple_pgo.cpp)
 
 add_executable(pgo_node src/pgo_node.cpp ${SRC_LIST})
-ament_target_dependencies(pgo_node rclcpp std_msgs sensor_msgs nav_msgs message_filters pcl_conversions tf2_ros geometry_msgs GTSAM)
+ament_target_dependencies(pgo_node rclcpp std_msgs sensor_msgs nav_msgs message_filters pcl_conversions tf2_ros geometry_msgs visualization_msgs GTSAM)
 target_link_libraries(pgo_node ${PCL_LIBRARIES} gtsam)
 
 

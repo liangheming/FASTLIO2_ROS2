@@ -94,7 +94,7 @@ void SimplePGO::searchForLoopPairs()
 {
     if (m_key_poses.size() < 10)
         return;
-
+    size_t cur_idx = m_key_poses.size() - 1;
     const KeyPoseWithCloud &last_item = m_key_poses.back();
     pcl::PointXYZ last_pose_pt;
     last_pose_pt.x = last_item.t_global(0);
@@ -133,7 +133,7 @@ void SimplePGO::searchForLoopPairs()
         return;
 
     CloudType::Ptr target_cloud = getSubMap(loop_idx, m_config.loop_submap_half_range, m_config.submap_resolution);
-    CloudType::Ptr source_cloud = getSubMap(m_key_poses.size() - 1, 0, -1);
+    CloudType::Ptr source_cloud = getSubMap(m_key_poses.size() - 1, 0, m_config.submap_resolution);
     CloudType::Ptr align_cloud(new CloudType);
 
     m_icp.setInputSource(source_cloud);
@@ -146,11 +146,13 @@ void SimplePGO::searchForLoopPairs()
     M4F loop_transform = m_icp.getFinalTransformation();
 
     LoopPair one_pair;
-    one_pair.source_id = m_key_poses.size() - 1;
+    one_pair.source_id = cur_idx;
     one_pair.target_id = loop_idx;
-    one_pair.r_offset = loop_transform.block<3, 3>(0, 0).cast<double>();
-    one_pair.t_offset = loop_transform.block<3, 1>(0, 3).cast<double>();
     one_pair.score = m_icp.getFitnessScore();
+    M3D r_refined = loop_transform.block<3, 3>(0, 0).cast<double>() * m_key_poses[cur_idx].r_global;
+    V3D t_refined = loop_transform.block<3, 3>(0, 0).cast<double>() * m_key_poses[cur_idx].t_global + loop_transform.block<3, 1>(0, 3).cast<double>();
+    one_pair.r_offset = m_key_poses[loop_idx].r_global.transpose() * r_refined;
+    one_pair.t_offset = m_key_poses[loop_idx].r_global.transpose() * (t_refined - m_key_poses[loop_idx].t_global);
     m_cache_pairs.push_back(one_pair);
     m_history_pairs.emplace_back(one_pair.target_id, one_pair.source_id);
 }

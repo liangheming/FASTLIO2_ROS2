@@ -58,6 +58,7 @@ public:
 
     CloudType::Ptr getSubMap(int idx, int half_range, double resolution);
     std::vector<std::pair<size_t, size_t>> &historyPairs() { return m_history_pairs; }
+    std::vector<KeyPoseWithCloud> &keyPoses() { return m_key_poses; }
 
     M3D offsetR() { return m_r_offset; }
     V3D offsetT() { return m_t_offset; }

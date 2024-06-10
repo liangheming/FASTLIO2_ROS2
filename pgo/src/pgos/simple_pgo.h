@@ -1,5 +1,9 @@
 #pragma once
 #include "commons.h"
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/common/transforms.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/registration/icp.h>
 #include <gtsam/geometry/Rot3.h>
 #include <gtsam/geometry/Pose3.h>
 #include <gtsam/nonlinear/ISAM2.h>
@@ -26,11 +30,15 @@ struct LoopPair
     double score;
 };
 
-
 struct Config
 {
     double key_pose_delta_deg = 10;
-    double key_pose_delta_trans = 2.0;
+    double key_pose_delta_trans = 1.0;
+    double loop_search_radius = 1.0;
+    double loop_time_tresh = 60.0;
+    double loop_score_tresh = 0.15;
+    int loop_submap_half_range = 5;
+    double submap_resolution = 0.1;
 };
 
 class SimplePGO
@@ -40,16 +48,29 @@ public:
 
     bool isKeyPose(const PoseWithTime &pose);
 
-    bool addKeyPose(const CloudWithPose& cloud_with_pose);
+    bool addKeyPose(const CloudWithPose &cloud_with_pose);
+
+    bool hasLoop(){return m_cache_pairs.size() > 0;}
+
+    void searchForLoopPairs();
+
+    void smoothAndUpdate();
+
+    CloudType::Ptr getSubMap(int idx, int half_range, double resolution);
+    std::vector<std::pair<size_t, size_t>> &historyPairs() { return m_history_pairs; }
+
+    M3D offsetR() { return m_r_offset; }
+    V3D offsetT() { return m_t_offset; }
 
 private:
     Config m_config;
     std::vector<KeyPoseWithCloud> m_key_poses;
-    std::vector<std::pair<size_t,size_t>> m_history_pairs;
+    std::vector<std::pair<size_t, size_t>> m_history_pairs;
     std::vector<LoopPair> m_cache_pairs;
     M3D m_r_offset;
     V3D m_t_offset;
     std::shared_ptr<gtsam::ISAM2> m_isam2;
     gtsam::Values m_initial_values;
     gtsam::NonlinearFactorGraph m_graph;
+    pcl::IterativeClosestPoint<PointType, PointType> m_icp;
 };

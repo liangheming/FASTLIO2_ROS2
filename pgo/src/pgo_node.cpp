@@ -1,12 +1,15 @@
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <queue>
 #include "pgos/commons.h"
+#include "pgos/simple_pgo.h"
 
 using namespace std::chrono_literals;
 
@@ -31,14 +34,17 @@ public:
     PGONode() : Node("pgo_node")
     {
         RCLCPP_INFO(this->get_logger(), "PGO node started");
+
+        m_pgo = std::make_shared<SimplePGO>(m_pgo_config);
         rclcpp::QoS qos = rclcpp::QoS(10);
-        m_cloud_sub.subscribe(this, m_config.cloud_topic, qos.get_rmw_qos_profile());
-        m_odom_sub.subscribe(this, m_config.odom_topic, qos.get_rmw_qos_profile());
+        m_cloud_sub.subscribe(this, m_node_config.cloud_topic, qos.get_rmw_qos_profile());
+        m_odom_sub.subscribe(this, m_node_config.odom_topic, qos.get_rmw_qos_profile());
+        m_tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(*this);
 
         m_sync = std::make_shared<message_filters::Synchronizer<message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, nav_msgs::msg::Odometry>>>(message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, nav_msgs::msg::Odometry>(10), m_cloud_sub, m_odom_sub);
         m_sync->setAgePenalty(0.1);
         m_sync->registerCallback(std::bind(&PGONode::syncCB, this, std::placeholders::_1, std::placeholders::_2));
-        m_timer = this->create_wall_timer(10ms, std::bind(&PGONode::timerCB, this));
+        m_timer = this->create_wall_timer(50ms, std::bind(&PGONode::timerCB, this));
     }
 
     void syncCB(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &cloud_msg, const nav_msgs::msg::Odometry::ConstSharedPtr &odom_msg)
@@ -65,11 +71,28 @@ public:
         m_state.cloud_buffer.push(cp);
     }
 
+    void sendBroadCastTF(builtin_interfaces::msg::Time &time)
+    {
+        geometry_msgs::msg::TransformStamped transformStamped;
+        transformStamped.header.frame_id = m_node_config.map_frame;
+        transformStamped.child_frame_id = m_node_config.local_frame;
+        transformStamped.header.stamp = time;
+        Eigen::Quaterniond q(m_pgo->offsetR());
+        V3D t = m_pgo->offsetT();
+        transformStamped.transform.translation.x = t.x();
+        transformStamped.transform.translation.y = t.y();
+        transformStamped.transform.translation.z = t.z();
+        transformStamped.transform.rotation.x = q.x();
+        transformStamped.transform.rotation.y = q.y();
+        transformStamped.transform.rotation.z = q.z();
+        transformStamped.transform.rotation.w = q.w();
+        m_tf_broadcaster->sendTransform(transformStamped);
+    }
+
     void timerCB()
     {
         if (m_state.cloud_buffer.size() == 0)
             return;
-        RCLCPP_INFO(this->get_logger(), "Processing %lu messages", m_state.cloud_buffer.size());
         CloudWithPose cp = m_state.cloud_buffer.front();
         // 清理队列
         {
@@ -79,14 +102,37 @@ public:
                 m_state.cloud_buffer.pop();
             }
         }
+        builtin_interfaces::msg::Time cur_time;
+        cur_time.sec = cp.pose.sec;
+        cur_time.nanosec = cp.pose.nsec;
+        if (!m_pgo->addKeyPose(cp))
+        {
+
+            sendBroadCastTF(cur_time);
+            return;
+        }
+
+        m_pgo->searchForLoopPairs();
+
+        if (m_pgo->hasLoop())
+        {
+            RCLCPP_INFO(this->get_logger(), "PGO FIND LOOP!");
+        }
+
+        m_pgo->smoothAndUpdate();
+
+        sendBroadCastTF(cur_time);
     }
 
 private:
-    NodeConfig m_config;
+    NodeConfig m_node_config;
+    Config m_pgo_config;
     NodeState m_state;
+    std::shared_ptr<SimplePGO> m_pgo;
     rclcpp::TimerBase::SharedPtr m_timer;
     message_filters::Subscriber<sensor_msgs::msg::PointCloud2> m_cloud_sub;
     message_filters::Subscriber<nav_msgs::msg::Odometry> m_odom_sub;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster;
     std::shared_ptr<message_filters::Synchronizer<message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, nav_msgs::msg::Odometry>>> m_sync;
 };
 

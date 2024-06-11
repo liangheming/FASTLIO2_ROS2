@@ -1,0 +1,13 @@
+cloud_topic: /lio/body_cloud
+odom_topic: /lio/odom
+map_frame: map
+local_frame: lidar
+
+key_pose_delta_deg: 10
+key_pose_delta_trans: 1.0
+loop_search_radius: 1.0
+loop_time_tresh: 60.0
+loop_score_tresh: 0.15
+loop_submap_half_range: 5
+submap_resolution: 0.1
+min_loop_detect_duration: 5.0

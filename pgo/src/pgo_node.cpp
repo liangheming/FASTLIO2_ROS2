@@ -11,8 +11,13 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <queue>
+#include <filesystem>
 #include "pgos/commons.h"
 #include "pgos/simple_pgo.h"
+#include "interface/srv/save_maps.hpp"
+#include <pcl/io/io.h>
+#include <fstream>
+#include <yaml-cpp/yaml.h>
 
 using namespace std::chrono_literals;
 
@@ -37,7 +42,7 @@ public:
     PGONode() : Node("pgo_node")
     {
         RCLCPP_INFO(this->get_logger(), "PGO node started");
-
+        loadParameters();
         m_pgo = std::make_shared<SimplePGO>(m_pgo_config);
         rclcpp::QoS qos = rclcpp::QoS(10);
         m_cloud_sub.subscribe(this, m_node_config.cloud_topic, qos.get_rmw_qos_profile());
@@ -48,8 +53,35 @@ public:
         m_sync->setAgePenalty(0.1);
         m_sync->registerCallback(std::bind(&PGONode::syncCB, this, std::placeholders::_1, std::placeholders::_2));
         m_timer = this->create_wall_timer(50ms, std::bind(&PGONode::timerCB, this));
+        m_save_map_srv = this->create_service<interface::srv::SaveMaps>("/pgo/save_maps", std::bind(&PGONode::saveMapsCB, this, std::placeholders::_1, std::placeholders::_2));
     }
 
+    void loadParameters()
+    {
+        this->declare_parameter("config_path", "");
+        std::string config_path;
+        this->get_parameter<std::string>("config_path", config_path);
+        YAML::Node config = YAML::LoadFile(config_path);
+        if (!config)
+        {
+            RCLCPP_WARN(this->get_logger(), "FAIL TO LOAD YAML FILE!");
+            return;
+        }
+        RCLCPP_INFO(this->get_logger(), "LOAD FROM YAML CONFIG PATH: %s", config_path.c_str());
+        m_node_config.cloud_topic = config["cloud_topic"].as<std::string>();
+        m_node_config.odom_topic = config["odom_topic"].as<std::string>();
+        m_node_config.map_frame = config["map_frame"].as<std::string>();
+        m_node_config.local_frame = config["local_frame"].as<std::string>();
+
+        m_pgo_config.key_pose_delta_deg = config["key_pose_delta_deg"].as<double>();
+        m_pgo_config.key_pose_delta_trans = config["key_pose_delta_trans"].as<double>();
+        m_pgo_config.loop_search_radius = config["loop_search_radius"].as<double>();
+        m_pgo_config.loop_time_tresh = config["loop_time_tresh"].as<double>();
+        m_pgo_config.loop_score_tresh = config["loop_score_tresh"].as<double>();
+        m_pgo_config.loop_submap_half_range = config["loop_submap_half_range"].as<int>();
+        m_pgo_config.submap_resolution = config["submap_resolution"].as<double>();
+        m_pgo_config.min_loop_detect_duration = config["min_loop_detect_duration"].as<double>();
+    }
     void syncCB(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &cloud_msg, const nav_msgs::msg::Odometry::ConstSharedPtr &odom_msg)
     {
 
@@ -144,12 +176,11 @@ public:
             p2.x = poses[i2].t_global.x();
             p2.y = poses[i2].t_global.y();
             p2.z = poses[i2].t_global.z();
-            
+
             nodes_marker.points.push_back(p1);
             nodes_marker.points.push_back(p2);
             edges_marker.points.push_back(p1);
             edges_marker.points.push_back(p2);
-
         }
 
         marker_array.markers.push_back(nodes_marker);
@@ -185,8 +216,72 @@ public:
         m_pgo->smoothAndUpdate();
 
         sendBroadCastTF(cur_time);
-        
+
         publishLoopMarkers(cur_time);
+    }
+
+    void saveMapsCB(const std::shared_ptr<interface::srv::SaveMaps::Request> request, std::shared_ptr<interface::srv::SaveMaps::Response> response)
+    {
+        if (!std::filesystem::exists(request->file_path))
+        {
+            response->success = false;
+            response->message = request->file_path + " IS NOT EXISTS!";
+            return;
+        }
+
+        if (m_pgo->keyPoses().size() == 0)
+        {
+            response->success = false;
+            response->message = "NO POSES!";
+            return;
+        }
+
+        std::filesystem::path p_dir(request->file_path);
+        std::filesystem::path patches_dir = p_dir / "patches";
+        std::filesystem::path poses_txt_path = p_dir / "poses.txt";
+        std::filesystem::path map_path = p_dir / "map.pcd";
+
+        if (request->save_patches)
+        {
+            if (std::filesystem::exists(patches_dir))
+            {
+                std::filesystem::remove_all(patches_dir);
+            }
+
+            std::filesystem::create_directories(patches_dir);
+
+            if (std::filesystem::exists(poses_txt_path))
+            {
+                std::filesystem::remove(poses_txt_path);
+            }
+            RCLCPP_INFO(this->get_logger(), "Patches Path: %s", patches_dir.string().c_str());
+        }
+        RCLCPP_INFO(this->get_logger(), "SAVE MAP TO %s", map_path.string().c_str());
+
+        std::ofstream txt_file(poses_txt_path);
+
+        CloudType::Ptr ret(new CloudType);
+        for (size_t i = 0; i < m_pgo->keyPoses().size(); i++)
+        {
+
+            CloudType::Ptr body_cloud = m_pgo->keyPoses()[i].body_cloud;
+            if (request->save_patches)
+            {
+                std::string patch_name = std::to_string(i) + ".pcd";
+                std::filesystem::path patch_path = patches_dir / patch_name;
+                pcl::io::savePCDFileBinary(patch_path.string(), *body_cloud);
+                Eigen::Quaterniond q(m_pgo->keyPoses()[i].r_global);
+                V3D t = m_pgo->keyPoses()[i].t_global;
+                txt_file << patch_name << " " << t.x() << " " << t.y() << " " << t.z() << " " << q.w() << " " << q.x() << " " << q.y() << " " << q.z() << std::endl;
+            }
+            CloudType::Ptr world_cloud(new CloudType);
+            pcl::transformPointCloud(*body_cloud, *world_cloud, m_pgo->keyPoses()[i].t_global, Eigen::Quaterniond(m_pgo->keyPoses()[i].r_global));
+            *ret += *world_cloud;
+        }
+        txt_file.close();
+        pcl::io::savePCDFileBinary(map_path.string(), *ret);
+        response->success = true;
+        response->message = "SAVE SUCCESS!";
     }
 
 private:
@@ -196,6 +291,7 @@ private:
     std::shared_ptr<SimplePGO> m_pgo;
     rclcpp::TimerBase::SharedPtr m_timer;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr m_loop_marker_pub;
+    rclcpp::Service<interface::srv::SaveMaps>::SharedPtr m_save_map_srv;
     message_filters::Subscriber<sensor_msgs::msg::PointCloud2> m_cloud_sub;
     message_filters::Subscriber<nav_msgs::msg::Odometry> m_odom_sub;
     std::shared_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster;

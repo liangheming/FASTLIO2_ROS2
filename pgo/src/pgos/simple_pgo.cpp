@@ -94,6 +94,17 @@ void SimplePGO::searchForLoopPairs()
 {
     if (m_key_poses.size() < 10)
         return;
+    if (m_config.min_loop_detect_duration > 0.0)
+    {
+        if (m_history_pairs.size() > 0)
+        {
+            double current_time = m_key_poses.back().time;
+            double last_time = m_key_poses[m_history_pairs.back().second].time;
+            if (current_time - last_time < m_config.min_loop_detect_duration)
+                return;
+        }
+    }
+
     size_t cur_idx = m_key_poses.size() - 1;
     const KeyPoseWithCloud &last_item = m_key_poses.back();
     pcl::PointXYZ last_pose_pt;

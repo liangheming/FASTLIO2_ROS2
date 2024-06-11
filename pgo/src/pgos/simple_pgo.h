@@ -39,6 +39,7 @@ struct Config
     double loop_score_tresh = 0.15;
     int loop_submap_half_range = 5;
     double submap_resolution = 0.1;
+    double min_loop_detect_duration = 10.0;
 };
 
 class SimplePGO

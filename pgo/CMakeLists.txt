@@ -29,6 +29,9 @@ find_package(visualization_msgs REQUIRED)
 find_package(GTSAM REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
+find_package(interface REQUIRED)
+find_package(yaml-cpp REQUIRED)
+
 
 
 include_directories(
@@ -40,12 +43,13 @@ set(SRC_LIST src/pgos/commons.cpp
              src/pgos/simple_pgo.cpp)
 
 add_executable(pgo_node src/pgo_node.cpp ${SRC_LIST})
-ament_target_dependencies(pgo_node rclcpp std_msgs sensor_msgs nav_msgs message_filters pcl_conversions tf2_ros geometry_msgs visualization_msgs GTSAM)
-target_link_libraries(pgo_node ${PCL_LIBRARIES} gtsam)
+ament_target_dependencies(pgo_node rclcpp std_msgs sensor_msgs nav_msgs message_filters pcl_conversions tf2_ros geometry_msgs visualization_msgs interface GTSAM)
+target_link_libraries(pgo_node ${PCL_LIBRARIES} gtsam yaml-cpp)
 
 
 install(TARGETS pgo_node DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 
 if(BUILD_TESTING)

@@ -4,7 +4,7 @@ map_frame: map
 local_frame: lidar
 
 key_pose_delta_deg: 10
-key_pose_delta_trans: 1.0
+key_pose_delta_trans: 0.5
 loop_search_radius: 1.0
 loop_time_tresh: 60.0
 loop_score_tresh: 0.15

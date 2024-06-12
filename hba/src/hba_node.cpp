@@ -5,6 +5,8 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "hba/blam.h"
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/common/transforms.h>
 
 void fromStr(const std::string &str, std::string &file_name, Pose &pose)
 {
@@ -25,6 +27,12 @@ int main(int argc, char *argv[])
 {
     pcl::PCDReader reader;
     Config config;
+
+    double scan_resolution = 0.1;
+    size_t skip_num = 3;
+    pcl::VoxelGrid<pcl::PointXYZI> voxel_grid;
+    voxel_grid.setLeafSize(scan_resolution, scan_resolution, scan_resolution);
+
     BLAM blam(config);
 
     std::filesystem::path p_dir(argv[1]);
@@ -38,6 +46,9 @@ int main(int argc, char *argv[])
     std::string line;
     std::string file_name;
     Pose pose;
+
+    Vec<pcl::PointCloud<pcl::PointXYZI>::Ptr> raw_points;
+
     while (std::getline(ifs, line))
     {
 
@@ -50,23 +61,49 @@ int main(int argc, char *argv[])
         }
         pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
         reader.read(pcd_file, *cloud);
-        blam.addCloudAndPose(cloud, pose);
+        raw_points.push_back(cloud);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+        input_cloud->reserve(cloud->size());
+        for (size_t i = 0; i < cloud->size(); i += skip_num)
+        {
+            input_cloud->push_back(cloud->points[i]);
+        }
+
+        voxel_grid.setInputCloud(input_cloud);
+        voxel_grid.filter(*input_cloud);
+
+        blam.addCloudAndPose(input_cloud, pose);
         // std::cout << file_name << ":" << pose.t.transpose() << std::endl;
         // std::cout << "cloud size:" << cloud->size() << std::endl;
     }
-    blam.buildVoxels();
-
-    std::cout << "plane count:" << blam.planeCount() << std::endl;
-    int flat_count = 0;
-    for (auto it = blam.voxelMap().begin(); it != blam.voxelMap().end(); it++)
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_world(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PCDWriter writer;
+    Vec<Pose> &poses = blam.poses();
+    std::cout << poses[0].t.transpose() << std::endl;
+    for (size_t i = 0; i < raw_points.size(); i++)
     {
-        if (it->second->isPlane())
-        {
-            flat_count++;
-        }
+        pcl::PointCloud<pcl::PointXYZI>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+        Eigen::Quaterniond qi(poses[i].r);
+        V3D ti = poses[i].t;
+        pcl::transformPointCloud(*raw_points[i], *temp_cloud, ti, qi);
+        *cloud_world += *temp_cloud;
     }
-    std::cout << "flat count:" << flat_count << std::endl;
-    std::cout << blam.voxelMap().size() << std::endl;
+    writer.writeBinaryCompressed("/home/zhouzhou/temp/cloud_world1.pcd", *cloud_world);
+
+    blam.buildVoxels();
+    blam.optimize();
+
+    cloud_world->clear();
+    std::cout << poses[0].t.transpose() << std::endl;
+    for (size_t i = 0; i < raw_points.size(); i++)
+    {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+        Eigen::Quaterniond qi(poses[i].r);
+        V3D ti = poses[i].t;
+        pcl::transformPointCloud(*raw_points[i], *temp_cloud, ti, qi);
+        *cloud_world += *temp_cloud;
+    }
+    writer.writeBinaryCompressed("/home/zhouzhou/temp/cloud_world2.pcd", *cloud_world);
 
     return 0;
 }

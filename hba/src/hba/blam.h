@@ -2,9 +2,9 @@
 #include <cstdint>
 #include <Eigen/Eigen>
 #include <unordered_map>
-#include <pcl/filters/voxel_grid.h>
 
 #include "commons.h"
+#include <sophus/so3.hpp>
 
 #define HASH_P 116101
 #define MAX_N 10000000000
@@ -46,7 +46,16 @@ public:
     void insert(const PointType &point);
     void split();
     int planeCount();
+    void getAllPlanes(Vec<OctoTree *> &planes);
+    V3D m_mean;
+    V3D m_eigen_val;
+    M3D m_eigen_vec;
     bool isPlane() { return m_is_plane; }
+
+    M3D Fp(const V3D &p);
+    V3D dp(const V3D &p);
+    M3D dpdp(const V3D &p1, const V3D &p2, bool equal);
+    PointVec &points() { return m_points; }
 
 private:
     bool m_is_plane;
@@ -63,9 +72,9 @@ struct Config
 {
     int max_layer = 2;
     int min_point_num = 10;
-    double scan_resolution = 0.1;
     double voxel_size = 1.0;
     double plane_thresh = 0.01;
+    size_t max_iter = 10;
 };
 
 using VoxelMap = std::unordered_map<VoxelKey, std::shared_ptr<OctoTree>, VoxelKey::Hasher>;
@@ -83,9 +92,26 @@ public:
 
     int planeCount();
 
+    void getAllPlanes(Vec<OctoTree *> &planes);
+
+    void optimize();
+
+    void mergePointVec(const PointVec &in, PointVec &out);
+
+    void buildMatrix(Vec<OctoTree *> &planes, Vec<PointVec> &all_points, Vec<size_t> all_start_idx, Eigen::MatrixXd &H, Eigen::MatrixXd &D, Eigen::MatrixXd &J);
+
+    double evalResidual(const Vec<OctoTree *> &planes, const Vec<Pose> &poses);
+
+    double updatePlanes(const Vec<OctoTree *> &planes, const Vec<Pose> &poses);
+
+    void updateMergedPoints(Vec<PointVec> &merged_points, const Vec<Pose> &poses);
+
+    void updatePoses(Vec<Pose> &poses, Eigen::VectorXd &x);
+    Vec<Pose> &poses() { return m_poses; }
+
 private:
     Config m_config;
     VoxelMap m_map;
     Vec<Pose> m_poses;
-    pcl::VoxelGrid<pcl::PointXYZI> m_voxel_filter;
+    Vec<PointVec> m_clouds;
 };

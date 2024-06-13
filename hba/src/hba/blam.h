@@ -98,7 +98,7 @@ public:
 
     void mergePointVec(const PointVec &in, PointVec &out);
 
-    void buildMatrix(Vec<OctoTree *> &planes, Vec<PointVec> &all_points, Vec<size_t> all_start_idx, Eigen::MatrixXd &H, Eigen::MatrixXd &D, Eigen::MatrixXd &J);
+    void buildMatrix(Vec<OctoTree *> &planes, Vec<PointVec> &all_points, Eigen::MatrixXd &H, Eigen::VectorXd &J);
 
     double evalResidual(const Vec<OctoTree *> &planes, const Vec<Pose> &poses);
 

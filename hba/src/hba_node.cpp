@@ -76,34 +76,37 @@ int main(int argc, char *argv[])
         // std::cout << file_name << ":" << pose.t.transpose() << std::endl;
         // std::cout << "cloud size:" << cloud->size() << std::endl;
     }
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_world(new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::PCDWriter writer;
+    // pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_world(new pcl::PointCloud<pcl::PointXYZI>);
+    // pcl::PCDWriter writer;
     Vec<Pose> &poses = blam.poses();
+    std::cout << poses[0].r << std::endl;
     std::cout << poses[0].t.transpose() << std::endl;
-    for (size_t i = 0; i < raw_points.size(); i++)
-    {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-        Eigen::Quaterniond qi(poses[i].r);
-        V3D ti = poses[i].t;
-        pcl::transformPointCloud(*raw_points[i], *temp_cloud, ti, qi);
-        *cloud_world += *temp_cloud;
-    }
-    writer.writeBinaryCompressed("/home/zhouzhou/temp/cloud_world1.pcd", *cloud_world);
+    // for (size_t i = 0; i < raw_points.size(); i++)
+    // {
+    //     pcl::PointCloud<pcl::PointXYZI>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    //     Eigen::Quaterniond qi(poses[i].r);
+    //     V3D ti = poses[i].t;
+    //     pcl::transformPointCloud(*raw_points[i], *temp_cloud, ti, qi);
+    //     *cloud_world += *temp_cloud;
+    // }
+    // writer.writeBinaryCompressed("/home/zhouzhou/temp/cloud_world1.pcd", *cloud_world);
 
-    blam.buildVoxels();
+    // blam.buildVoxels();
     blam.optimize();
 
-    cloud_world->clear();
+    // cloud_world->clear();
+    std::cout << "==========" << std::endl;
+    std::cout << poses[0].r << std::endl;
     std::cout << poses[0].t.transpose() << std::endl;
-    for (size_t i = 0; i < raw_points.size(); i++)
-    {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-        Eigen::Quaterniond qi(poses[i].r);
-        V3D ti = poses[i].t;
-        pcl::transformPointCloud(*raw_points[i], *temp_cloud, ti, qi);
-        *cloud_world += *temp_cloud;
-    }
-    writer.writeBinaryCompressed("/home/zhouzhou/temp/cloud_world2.pcd", *cloud_world);
+    // for (size_t i = 0; i < raw_points.size(); i++)
+    // {
+    //     pcl::PointCloud<pcl::PointXYZI>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    //     Eigen::Quaterniond qi(poses[i].r);
+    //     V3D ti = poses[i].t;
+    //     pcl::transformPointCloud(*raw_points[i], *temp_cloud, ti, qi);
+    //     *cloud_world += *temp_cloud;
+    // }
+    // writer.writeBinaryCompressed("/home/zhouzhou/temp/cloud_world2.pcd", *cloud_world);
 
     return 0;
 }

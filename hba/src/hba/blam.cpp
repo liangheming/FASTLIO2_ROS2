@@ -218,40 +218,50 @@ void BLAM::getAllPlanes(Vec<OctoTree *> &planes)
         p.second->getAllPlanes(planes);
     }
 }
-void BLAM::buildMatrix(Vec<OctoTree *> &planes, Vec<PointVec> &all_points, Vec<size_t> all_start_idx, Eigen::MatrixXd &H, Eigen::MatrixXd &D, Eigen::MatrixXd &J)
+void BLAM::buildMatrix(Vec<OctoTree *> &planes, Vec<PointVec> &all_points, Eigen::MatrixXd &H, Eigen::VectorXd &J)
 {
     H.setZero();
-    D.setZero();
     J.setZero();
-#ifdef MP_EN
-    omp_set_num_threads(MP_PROC_NUM);
-#pragma omp parallel for
-#endif
+
     for (size_t i = 0; i < planes.size(); i++)
     {
         OctoTree *plane_ptr = planes[i];
-        size_t start_idx = all_start_idx[i];
         PointVec &points = all_points[i];
-
+        Eigen::MatrixXd D_i = Eigen::MatrixXd::Zero(3 * points.size(), 6 * points.size());
+        Eigen::MatrixXd H_i = Eigen::MatrixXd::Zero(3 * points.size(), 3 * points.size());
+        Eigen::MatrixXd J_i = Eigen::MatrixXd::Zero(1, 3 * points.size());
+        Vec<uint32_t> idxs(points.size(), 0);
         for (size_t m = 0; m < points.size(); m++)
         {
-            V3D p1 = V3D(points[m].x, points[m].y, points[m].z);
-            V3D pl1 = V3D(points[m].lx, points[m].ly, points[m].lz);
-            size_t row = (start_idx + m) * 3;
-            uint32_t d_col = points[m].id * 6;
-            Pose &pose = m_poses[points[m].id];
+            PointType &point1 = points[m];
+            V3D p1(point1.x, point1.y, point1.z);
+            V3D pl1(point1.lx, point1.ly, point1.lz);
+            idxs[m] = point1.id;
+            Pose &pose = m_poses[point1.id];
             for (size_t n = 0; n < points.size(); n++)
             {
-                V3D p2 = V3D(points[n].x, points[n].y, points[n].z);
-                // V3D pl2 = V3D(points[n].lx, points[n].ly, points[n].lz);
-                size_t col = (start_idx + n) * 3;
-                H.block<3, 3>(row, col) = plane_ptr->dpdp(p1, p2, m == n);
+                PointType &point2 = points[n];
+                V3D p2(point2.x, point2.y, point2.z);
+                H_i.block<3, 3>(m * 3, n * 3) = plane_ptr->dpdp(p1, p2, m == n);
             }
-            J.block<1, 3>(0, row) = plane_ptr->dp(p1).transpose();
-            M3D skew_pl;
-            skew_pl << SKEW_SYM_MATRX(pl1);
-            D.block<3, 3>(row, d_col) = -pose.r * skew_pl;
-            D.block<3, 3>(row, d_col + 3) = M3D::Identity();
+            J_i.block<1, 3>(0, m * 3) = plane_ptr->dp(p1).transpose();
+            D_i.block<3, 3>(m * 3, m * 3) = -pose.r * Sophus::SO3d::hat(pl1);
+            D_i.block<3, 3>(m * 3, m * 3 + 3) = M3D::Identity();
+        }
+        Eigen::MatrixXd H_bar = D_i.transpose() * H_i * D_i; // 6 n * 6 n
+        Eigen::VectorXd J_bar = (J_i * D_i).transpose();     // 6n * 1
+        for (size_t m = 0; m < idxs.size(); m++)
+        {
+            uint32_t p_id1 = idxs[m];
+            for (size_t n = m; n < idxs.size(); n++)
+            {
+                uint32_t p_id2 = idxs[n];
+                H(p_id1 * 6, p_id2 * 6) += H_bar(m * 6, n * 6);
+                if (m == n)
+                    continue;
+                H(p_id2 * 6, p_id1 * 6) += H_bar(n * 6, m * 6);
+            }
+            J.block<6, 1>(p_id1 * 6, 0) += J_bar.block<6, 1>(m * 6, 0);
         }
     }
 }
@@ -322,19 +332,12 @@ double BLAM::updatePlanes(const Vec<OctoTree *> &planes, const Vec<Pose> &poses)
 }
 void BLAM::optimize()
 {
-    // auto t0 = std::chrono::high_resolution_clock::now();
     buildVoxels();
-    // auto t1 = std::chrono::high_resolution_clock::now();
-
-    // std::chrono::duration<double> duration = t1 - t0;
-    // std::cout << "buildVoxels: " << duration.count() << " s" << std::endl;
-
     Vec<OctoTree *> planes;
-
     getAllPlanes(planes);
-
     Vec<PointVec> all_points(planes.size(), PointVec(0));
     Vec<size_t> all_start_idx(planes.size(), 0);
+
     size_t last_size = 0;
     for (size_t i = 0; i < planes.size(); i++)
     {
@@ -343,66 +346,49 @@ void BLAM::optimize()
         all_start_idx[i] = last_size;
         last_size += all_points[i].size();
     }
+    Eigen::MatrixXd H, D;
+    Eigen::VectorXd J;
+    D.resize(m_poses.size() * 6, m_poses.size() * 6);
+    H.resize(m_poses.size() * 6, m_poses.size() * 6);
+    J.resize(m_poses.size() * 6);
 
-    Eigen::MatrixXd H, D, J, I;
-    H.resize(last_size * 3, last_size * 3);
-    D.resize(last_size * 3, m_poses.size() * 6);
-    J.resize(1, last_size * 3);
-    I.resize(m_poses.size() * 6, m_poses.size() * 6);
-    I.setIdentity();
-
-    double u = 0.01, v = 2.0, residual = 0.0, q = 0.0;
-    bool calc_hess = true;
+    double residual = 0.0;
+    bool build_hess = true;
+    double u = 0.01, v = 2.0;
 
     for (size_t i = 0; i < m_config.max_iter; i++)
     {
-        if (calc_hess)
+        if (build_hess)
         {
-            updateMergedPoints(all_points, m_poses);
-
             residual = updatePlanes(planes, m_poses);
-            // t0 = std::chrono::high_resolution_clock::now();
-            buildMatrix(planes, all_points, all_start_idx, H, D, J);
-            // t1 = std::chrono::high_resolution_clock::now();
-            // duration = t1 - t0;
-            // std::cout << "buildMatrix: " << duration.count() << " s" << std::endl;
+            updateMergedPoints(all_points, m_poses);
+            buildMatrix(planes, all_points, H, J);
         }
-        // t0 = std::chrono::high_resolution_clock::now();
-        Eigen::MatrixXd H_telta = D.transpose() * H * D + u * I;
-        // t1 = std::chrono::high_resolution_clock::now();
-        // duration = t1 - t0;
-        // std::cout << "H_telta: " << duration.count() << " s" << std::endl;
-
-        Eigen::VectorXd J_telta = (J * D).transpose();
-
-        // t0 = std::chrono::high_resolution_clock::now();
-        Eigen::VectorXd b_telta = H_telta.colPivHouseholderQr().solve(-J_telta);
-        // t1 = std::chrono::high_resolution_clock::now();
-        // duration = t1 - t0;
-        // std::cout << "solve: " << duration.count() << " s" << std::endl;
-
+        D = H.diagonal().asDiagonal();
+        Eigen::MatrixXd Hess = H + u * D;
+        Eigen::VectorXd delta = Hess.colPivHouseholderQr().solve(-J);
         Vec<Pose> temp_pose(m_poses.begin(), m_poses.end());
-        updatePoses(temp_pose, b_telta);
-        double residual2 = evalResidual(planes, temp_pose);
-        q = residual - residual2;
-        if (q > 0)
+        updatePoses(temp_pose, delta);
+        double residual_new = evalResidual(planes, temp_pose);
+        double pho = (residual - residual_new) / (0.5 * (delta.transpose() * (u * D * delta - J))[0]);
+        if (pho > 0)
         {
+            build_hess = true;
+            // std::cout << "do update" << std::endl;
+            // std::cout << m_poses[0].t.transpose() << std::endl;
+            // std::cout << delta.segment<6>(0).transpose()<< std::endl;
             m_poses = temp_pose;
-            double q1 = 0.5 * (b_telta.transpose() * (u * H_telta.diagonal().asDiagonal() * b_telta - J_telta))[0];
-            q = q / q1;
             v = 2.0;
-            q = 1 - pow(2 * q - 1, 3);
-            u *= (q < 0.33333333333 ? 0.33333333333 : q);
-            calc_hess = true;
-            break;
+            double q = 1 - pow(2 * pho - 1, 3);
+            u *= (q < 0.33333333 ? 0.33333333 : q);
         }
         else
         {
-            u = u * v;
-            v = 2 * v;
-            calc_hess = false;
+            build_hess = false;
+            u *= v;
+            v *= 2;
         }
-        if (std::abs(residual2 - residual) < 1e-6)
+        if (std::abs(residual - residual_new) < 1e-6)
             break;
     }
 }
@@ -418,9 +404,6 @@ void BLAM::mergePointVec(const PointVec &in, PointVec &out)
         }
         else
         {
-            // temp_cache[p.id].x += p.x;
-            // temp_cache[p.id].y += p.y;
-            // temp_cache[p.id].z += p.z;
             temp_cache[p.id].lx += p.lx;
             temp_cache[p.id].ly += p.ly;
             temp_cache[p.id].lz += p.lz;
@@ -430,9 +413,6 @@ void BLAM::mergePointVec(const PointVec &in, PointVec &out)
     for (auto &iter : temp_cache)
     {
         PointType &p = iter.second;
-        // p.x /= p.time;
-        // p.y /= p.time;
-        // p.z /= p.time;
         p.lx /= p.time;
         p.ly /= p.time;
         p.lz /= p.time;

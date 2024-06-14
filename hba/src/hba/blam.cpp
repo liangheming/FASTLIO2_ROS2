@@ -248,6 +248,7 @@ void BLAM::buildMatrix(Vec<OctoTree *> &planes, Vec<PointVec> &all_points, Eigen
             D_i.block<3, 3>(m * 3, m * 3) = -pose.r * Sophus::SO3d::hat(pl1);
             D_i.block<3, 3>(m * 3, m * 3 + 3) = M3D::Identity();
         }
+
         Eigen::MatrixXd H_bar = D_i.transpose() * H_i * D_i; // 6 n * 6 n
         Eigen::VectorXd J_bar = (J_i * D_i).transpose();     // 6n * 1
         for (size_t m = 0; m < idxs.size(); m++)
@@ -256,10 +257,10 @@ void BLAM::buildMatrix(Vec<OctoTree *> &planes, Vec<PointVec> &all_points, Eigen
             for (size_t n = m; n < idxs.size(); n++)
             {
                 uint32_t p_id2 = idxs[n];
-                H(p_id1 * 6, p_id2 * 6) += H_bar(m * 6, n * 6);
+                H.block<6, 6>(p_id1 * 6, p_id2 * 6) += H_bar.block<6, 6>(m * 6, n * 6);
                 if (m == n)
                     continue;
-                H(p_id2 * 6, p_id1 * 6) += H_bar(n * 6, m * 6);
+                H.block<6, 6>(p_id2 * 6, p_id1 * 6) += H_bar.block<6, 6>(n * 6, m * 6);
             }
             J.block<6, 1>(p_id1 * 6, 0) += J_bar.block<6, 1>(m * 6, 0);
         }
@@ -363,6 +364,7 @@ void BLAM::optimize()
             residual = updatePlanes(planes, m_poses);
             updateMergedPoints(all_points, m_poses);
             buildMatrix(planes, all_points, H, J);
+            m_H = H;
         }
         D = H.diagonal().asDiagonal();
         Eigen::MatrixXd Hess = H + u * D;
@@ -388,7 +390,7 @@ void BLAM::optimize()
             u *= v;
             v *= 2;
         }
-        if (std::abs(residual - residual_new) < 1e-6)
+        if (std::abs(residual - residual_new) < 1e-9)
             break;
     }
 }

@@ -109,9 +109,12 @@ public:
     void updatePoses(Vec<Pose> &poses, Eigen::VectorXd &x);
     Vec<Pose> &poses() { return m_poses; }
 
+    Eigen::MatrixXd &H() { return m_H; }
+
 private:
     Config m_config;
     VoxelMap m_map;
     Vec<Pose> m_poses;
     Vec<PointVec> m_clouds;
+    Eigen::MatrixXd m_H;
 };

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     Config config;
 
     double scan_resolution = 0.1;
-    size_t skip_num = 3;
+    size_t skip_num = 1;
     pcl::VoxelGrid<pcl::PointXYZI> voxel_grid;
     voxel_grid.setLeafSize(scan_resolution, scan_resolution, scan_resolution);
 
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     // pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_world(new pcl::PointCloud<pcl::PointXYZI>);
     // pcl::PCDWriter writer;
     Vec<Pose> &poses = blam.poses();
-    std::cout << poses[0].r << std::endl;
+    // std::cout << poses[0].r << std::endl;
     std::cout << poses[0].t.transpose() << std::endl;
     // for (size_t i = 0; i < raw_points.size(); i++)
     // {
@@ -96,8 +96,12 @@ int main(int argc, char *argv[])
 
     // cloud_world->clear();
     std::cout << "==========" << std::endl;
-    std::cout << poses[0].r << std::endl;
+    // std::cout << poses[0].r << std::endl;
     std::cout << poses[0].t.transpose() << std::endl;
+
+    std::cout << blam.H().rows() << ":" << blam.H().cols() << std::endl;
+
+    std::cout << blam.H().block<12, 12>(0, 0) << std::endl;
     // for (size_t i = 0; i < raw_points.size(); i++)
     // {
     //     pcl::PointCloud<pcl::PointXYZI>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZI>);

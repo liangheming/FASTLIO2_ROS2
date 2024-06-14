@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <pcl/io/pcd_io.h>
 #include <rclcpp/rclcpp.hpp>
-
 #include "hba/blam.h"
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/common/transforms.h>
@@ -26,14 +25,14 @@ void fromStr(const std::string &str, std::string &file_name, Pose &pose)
 int main(int argc, char *argv[])
 {
     pcl::PCDReader reader;
-    // Config config;
+    BLAMConfig config;
 
     double scan_resolution = 0.1;
     size_t skip_num = 1;
     pcl::VoxelGrid<pcl::PointXYZI> voxel_grid;
     voxel_grid.setLeafSize(scan_resolution, scan_resolution, scan_resolution);
 
-    // BLAM blam(config);
+    BLAM blam(config);
 
     std::filesystem::path p_dir(argv[1]);
     std::filesystem::path txt_file = p_dir / "poses.txt";
@@ -63,8 +62,14 @@ int main(int argc, char *argv[])
         reader.read(pcd_file, *cloud);
         voxel_grid.setInputCloud(cloud);
         voxel_grid.filter(*cloud);
-        // std::cout << file_name << ":" << pose.t.transpose() << std::endl;
-        // std::cout << "cloud size:" << cloud->size() << std::endl;
+        blam.insert(cloud, pose);
     }
+
+    std::cout << "start optimize" << std::endl;
+    std::cout << blam.poses()[0].t.transpose() << std::endl;
+    blam.optimize();
+    std::cout << "after optimize" << std::endl;
+    std::cout << blam.poses()[0].t.transpose() << std::endl;
+    std::cout << blam.H().block<12, 12>(0, 0) << std::endl;
     return 0;
 }

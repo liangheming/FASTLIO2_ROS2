@@ -340,7 +340,7 @@ void BLAM::updateJaccAndHess()
         }
     }
 }
-void BLAM::optimizes()
+void BLAM::optimize()
 {
     buildVoxels();
     Eigen::MatrixXd D;

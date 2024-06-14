@@ -118,7 +118,7 @@ public:
 
     void updateJaccAndHess();
 
-    void optimizes();
+    void optimize();
 
     double updatePlanesByPoses(const Vec<Pose> &poses);
     

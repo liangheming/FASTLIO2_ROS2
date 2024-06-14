@@ -357,7 +357,6 @@ void BLAM::optimize()
         {
             residual = updatePlanesByPoses(m_poses);
             updateJaccAndHess();
-
         }
         D = m_H.diagonal().asDiagonal();
         Eigen::MatrixXd Hess = m_H + u * D;
@@ -369,7 +368,7 @@ void BLAM::optimize()
         if (pho > 0)
         {
             build_hess = true;
-            std::cout << "LM ITER UPDATE" << std::endl;
+            std::cout << "ITER : " << i << " LM ITER UPDATE" << std::endl;
             m_poses = temp_pose;
             v = 2.0;
             double q = 1 - pow(2 * pho - 1, 3);
@@ -406,6 +405,19 @@ double BLAM::evalPlanesByPoses(const Vec<Pose> &poses)
         residual += plane->evalByPose(poses);
     }
     return residual;
+}
+
+int BLAM::planeCount(bool with_sub_planes)
+{
+    int count = 0;
+    for (auto &iter : m_voxel_map)
+    {
+        if (with_sub_planes)
+            count += iter.second->planeCount();
+        else if (iter.second->isPlane())
+            count += 1;
+    }
+    return count;
 }
 
 void BLAM::plusDelta(Vec<Pose> &poses, const Eigen::VectorXd &x)

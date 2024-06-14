@@ -90,14 +90,13 @@ private:
 struct BLAMConfig
 {
     double voxel_size = 1.0;
-    int min_point_num =10;
-    int max_layer = 2;
+    int min_point_num = 10;
+    int max_layer = 4;
     double plane_thresh = 0.01;
     size_t max_iter = 10;
 };
 
 using VoxelMap = std::unordered_map<VoxelKey, std::shared_ptr<OctoTree>, VoxelKey::Hasher>;
-
 
 class BLAM
 {
@@ -107,8 +106,8 @@ public:
     VoxelMap &voxelMap() { return m_voxel_map; }
     Vec<Pose> &poses() { return m_poses; }
     Vec<OctoTree *> &planes() { return m_planes; }
-    Eigen::MatrixXd& H() { return m_H; }
-    Eigen::VectorXd& J() { return m_J; }
+    Eigen::MatrixXd &H() { return m_H; }
+    Eigen::VectorXd &J() { return m_J; }
 
     void insert(pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud, const Pose &pose);
 
@@ -121,11 +120,12 @@ public:
     void optimize();
 
     double updatePlanesByPoses(const Vec<Pose> &poses);
-    
+
     double evalPlanesByPoses(const Vec<Pose> &poses);
 
-    static void plusDelta(Vec<Pose> &poses, const Eigen::VectorXd &x);
+    int planeCount(bool with_sub_planes = false);
 
+    static void plusDelta(Vec<Pose> &poses, const Eigen::VectorXd &x);
 
 private:
     BLAMConfig m_config;

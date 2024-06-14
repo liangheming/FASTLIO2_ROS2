@@ -71,5 +71,8 @@ int main(int argc, char *argv[])
     std::cout << "after optimize" << std::endl;
     std::cout << blam.poses()[0].t.transpose() << std::endl;
     std::cout << blam.H().block<12, 12>(0, 0) << std::endl;
+
+    std::cout << "plane count with sub: " << blam.planeCount(true) << " :: " << blam.planes().size() << std::endl;
+    std::cout << "plane count no sub: " << blam.planeCount(false) << std::endl;
     return 0;
 }

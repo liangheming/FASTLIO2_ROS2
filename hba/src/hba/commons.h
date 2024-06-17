@@ -14,6 +14,8 @@ using V2F = Eigen::Vector2f;
 using M4D = Eigen::Matrix4d;
 using V4D = Eigen::Vector4d;
 
+using M6D = Eigen::Matrix<double, 6, 6>;
+
 template <typename T>
 using Vec = std::vector<T>;
 

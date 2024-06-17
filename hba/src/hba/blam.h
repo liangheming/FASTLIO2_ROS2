@@ -127,6 +127,8 @@ public:
 
     static void plusDelta(Vec<Pose> &poses, const Eigen::VectorXd &x);
 
+    pcl::PointCloud<pcl::PointXYZI>::Ptr getLocalCloud();
+
 private:
     BLAMConfig m_config;
     Vec<Pose> m_poses;

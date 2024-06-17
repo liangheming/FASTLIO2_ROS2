@@ -368,7 +368,7 @@ void BLAM::optimize()
         if (pho > 0)
         {
             build_hess = true;
-            std::cout << "ITER : " << i << " LM ITER UPDATE" << std::endl;
+            // std::cout << "ITER : " << i << " LM ITER UPDATE" << std::endl;
             m_poses = temp_pose;
             v = 2.0;
             double q = 1 - pow(2 * pho - 1, 3);
@@ -430,4 +430,29 @@ void BLAM::plusDelta(Vec<Pose> &poses, const Eigen::VectorXd &x)
         r = r * Sophus::SO3d::exp(x.segment<3>(i * 6)).matrix();
         t += x.segment<3>(i * 6 + 3);
     }
+}
+
+pcl::PointCloud<pcl::PointXYZI>::Ptr BLAM::getLocalCloud()
+{
+    pcl::PointCloud<pcl::PointXYZI>::Ptr ret(new pcl::PointCloud<pcl::PointXYZI>);
+    Pose &first_pose = m_poses[0];
+
+    for (OctoTree *plane : m_planes)
+    {
+        for (const PointType &point : plane->points())
+        {
+            pcl::PointXYZI p;
+            Pose &cur_pose = m_poses[point.id];
+            M3D r_fc = first_pose.r.transpose() * cur_pose.r;
+            V3D t_fc = first_pose.r.transpose() * (cur_pose.t - first_pose.t);
+            V3D p_vec(point.lx, point.ly, point.lz);
+            p_vec = r_fc * p_vec + t_fc;
+            p.x = p_vec[0];
+            p.y = p_vec[1];
+            p.z = p_vec[2];
+            p.intensity = point.intensity;
+            ret->push_back(p);
+        }
+    }
+    return ret;
 }

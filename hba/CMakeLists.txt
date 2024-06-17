@@ -36,7 +36,8 @@ include_directories(
 )
 
 set(SRC_LIST src/hba/commons.cpp
-             src/hba/blam.cpp)
+             src/hba/blam.cpp
+             src/hba/hba.cpp)
 
 add_executable(hba_node src/hba_node.cpp ${SRC_LIST})
 ament_target_dependencies(hba_node rclcpp std_msgs GTSAM)

@@ -36,7 +36,7 @@ def generate_launch_description():
             ),
             launch_ros.actions.Node(
                 package="rviz2",
-                namespace="fastlio2",
+                namespace="pgo",
                 executable="rviz2",
                 name="rviz2",
                 output="screen",

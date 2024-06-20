@@ -22,10 +22,15 @@ class ICPLocalizer
 {
 public:
     ICPLocalizer(const ICPConfig &config);
+    
     bool loadMap(const std::string &path);
+    
     void setInput(const CloudType::Ptr &cloud);
-    bool align(M4F& guess);
-    ICPConfig& config(){return m_config;}
+
+    bool align(M4F &guess);
+    ICPConfig &config() { return m_config; }
+    CloudType::Ptr roughMap() { return m_rough_tgt; }
+    CloudType::Ptr refineMap() { return m_refine_tgt; }
 
 
 private:

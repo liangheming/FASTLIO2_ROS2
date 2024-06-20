@@ -12,6 +12,8 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SaveMaps.srv"
+  "srv/Relocalize.srv"
+  "srv/IsValid.srv"
   DEPENDENCIES std_msgs
 )
 

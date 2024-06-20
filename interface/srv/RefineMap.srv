@@ -1,0 +1,4 @@
+string maps_path
+---
+bool success
+string message

@@ -1,0 +1,11 @@
+scan_resolution: 0.1
+
+window_size: 20
+stride: 10
+voxel_size: 0.5
+min_point_num: 10
+max_layer: 3
+plane_thresh: 0.01
+ba_max_iter: 10
+hba_iter: 5
+down_sample: 0.1

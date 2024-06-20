@@ -13,58 +13,62 @@ void HBA::insert(pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud, const Pose &pose)
 void HBA::optimize()
 {
     m_levels = calcLevels();
-
     gtsam::Values initial_estimates;
     gtsam::LevenbergMarquardtParams lm_params;
     gtsam::NonlinearFactorGraph graph;
 
-    for (size_t i = 0; i < m_config.hba_iter; i++)
+    // for (size_t i = 0; i < m_config.hba_iter; i++)
+    // {
+    Vec<Vec<BLAM>>().swap(m_lbas);
+    m_lbas.resize(m_levels, Vec<BLAM>());
+    Vec<pcl::PointCloud<pcl::PointXYZI>::Ptr> clouds = m_clouds;
+    Vec<Pose> poses = m_poses;
+    initial_estimates.clear();
+    graph.resize(0);
+    // 设置初始值
+
+    std::cout << "INIT POSE ESTIMATE" << std::endl;
+    for (size_t j = 0; j < m_poses.size(); j++)
     {
-        Vec<Vec<BLAM>>().swap(m_lbas);
-        m_lbas.resize(m_levels, Vec<BLAM>());
-        Vec<pcl::PointCloud<pcl::PointXYZI>::Ptr> clouds = m_clouds;
-        Vec<Pose> poses = m_poses;
-        initial_estimates.clear();
-        graph.resize(0);
-        // 设置初始值
-        for (size_t j = 0; j < m_poses.size(); j++)
-        {
-            initial_estimates.insert(j, gtsam::Pose3(gtsam::Rot3(poses[j].r), gtsam::Point3(poses[j].t)));
-        }
-
-        for (int level = 0; level < m_levels; level++)
-        {
-            std::cout << "iter " << i << " optimize level " << level << std::endl;
-            constructHierarchy(clouds, poses, level);
-            updateCloudsAndPose(clouds, poses, level);
-        }
-        Vec<std::pair<size_t, size_t>> between_factors_id;
-        Vec<Pose> between_factors_pose;
-        Vec<M6D> between_factors_info;
-        getAllFactors(between_factors_id, between_factors_pose, between_factors_info);
-        // 添加二元因子
-        for (size_t j = 0; j < between_factors_id.size(); j++)
-        {
-            gtsam::BetweenFactor<gtsam::Pose3> between_factor(between_factors_id[j].first,
-                                                              between_factors_id[j].second,
-                                                              gtsam::Pose3(gtsam::Rot3(between_factors_pose[j].r), gtsam::Point3(between_factors_pose[j].t)),
-                                                              gtsam::noiseModel::Gaussian::Information(between_factors_info[j]));
-            graph.add(between_factor);
-        }
-        // 优化
-        gtsam::LevenbergMarquardtOptimizer optimizer(graph, initial_estimates, lm_params);
-
-        std::cout << "LM OPTIMIZE " << std::endl;
-
-        gtsam::Values result = optimizer.optimize();
-        // 更新位姿
-        for (size_t j = 0; j < m_poses.size(); j++)
-        {
-            gtsam::Pose3 pose = result.at<gtsam::Pose3>(j);
-            m_poses[j].t = pose.translation().matrix().cast<double>();
-            m_poses[j].r = pose.rotation().matrix().cast<double>();
-        }
+        initial_estimates.insert(j, gtsam::Pose3(gtsam::Rot3(poses[j].r), gtsam::Point3(poses[j].t)));
     }
+
+    for (int level = 0; level < m_levels; level++)
+    {
+        constructHierarchy(clouds, poses, level);
+        std::cout << "LBA OPTIMIZE LEVEL: " << level << std::endl;
+
+        updateCloudsAndPose(clouds, poses, level);
+    }
+    Vec<std::pair<size_t, size_t>> between_factors_id;
+    Vec<Pose> between_factors_pose;
+    Vec<M6D> between_factors_info;
+    getAllFactors(between_factors_id, between_factors_pose, between_factors_info);
+    // 添加二元因子
+
+    std::cout << "CONSTRUCT BETWEEN FACTORS" << std::endl;
+    for (size_t j = 0; j < between_factors_id.size(); j++)
+    {
+        gtsam::BetweenFactor<gtsam::Pose3> between_factor(between_factors_id[j].first,
+                                                          between_factors_id[j].second,
+                                                          gtsam::Pose3(gtsam::Rot3(between_factors_pose[j].r), gtsam::Point3(between_factors_pose[j].t)),
+                                                          gtsam::noiseModel::Gaussian::Information(between_factors_info[j]));
+        graph.add(between_factor);
+    }
+    // 优化
+    gtsam::LevenbergMarquardtOptimizer optimizer(graph, initial_estimates, lm_params);
+
+    std::cout << "LM OPTIMIZE " << std::endl;
+    gtsam::Values result = optimizer.optimize();
+    // 更新位姿
+    std::cout << "UPDATE POSE ESTIMATE" << std::endl;
+    for (size_t j = 0; j < m_poses.size(); j++)
+    {
+        gtsam::Pose3 pose = result.at<gtsam::Pose3>(j);
+        m_poses[j].t = pose.translation().matrix().cast<double>();
+        m_poses[j].r = pose.rotation().matrix().cast<double>();
+    }
+    // }
 }
 void HBA::updateCloudsAndPose(Vec<pcl::PointCloud<pcl::PointXYZI>::Ptr> &clouds, Vec<Pose> &poses, int level)
 {

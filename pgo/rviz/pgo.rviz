@@ -8,9 +8,6 @@ Panels:
         - /Status1
         - /PointCloud21
         - /PointCloud22
-        - /Axes1
-        - /Axes2
-        - /Path1
       Splitter Ratio: 0.5
     Tree Height: 1079
   - Class: rviz_common/Selection
@@ -30,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -67,7 +64,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 237
+      Max Intensity: 195
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: PointCloud2
@@ -101,7 +98,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: true
       Max Color: 255; 255; 255
-      Max Intensity: 255
+      Max Intensity: 195
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: PointCloud2
@@ -125,7 +122,7 @@ Visualization Manager:
       Length: 1
       Name: Axes
       Radius: 0.10000000149011612
-      Reference Frame: lidar
+      Reference Frame: map
       Value: true
     - Class: rviz_default_plugins/Axes
       Enabled: true
@@ -162,10 +159,23 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /fastlio2/lio_path
       Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        pgo_edges: true
+        pgo_nodes: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /pgo/loop_markers
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: lidar
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -207,26 +217,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz_default_plugins/Orbit
-      Distance: 7.265907287597656
+      Class: rviz_default_plugins/XYOrbit
+      Distance: 38.65398025512695
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 1.8247766494750977
+        Y: -5.519836902618408
+        Z: 5.7220458984375e-06
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8947967290878296
+      Pitch: 1.01979660987854
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 4.220390319824219
+      Value: XYOrbit (rviz_default_plugins)
+      Yaw: 4.747386932373047
     Saved: ~
 Window Geometry:
   Displays:

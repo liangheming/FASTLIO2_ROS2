@@ -28,6 +28,7 @@ struct NodeConfig
     std::string lidar_topic = "/livox/lidar";
     std::string body_frame = "body";
     std::string world_frame = "lidar";
+    bool print_time_cost = false;
 };
 struct StateData
 {
@@ -52,10 +53,10 @@ public:
         m_imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(m_node_config.imu_topic, 10, std::bind(&LIONode::imuCB, this, std::placeholders::_1));
         m_lidar_sub = this->create_subscription<livox_ros_driver2::msg::CustomMsg>(m_node_config.lidar_topic, 10, std::bind(&LIONode::lidarCB, this, std::placeholders::_1));
 
-        m_body_cloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("/lio/body_cloud", 10000);
-        m_world_cloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("/lio/world_cloud", 10000);
-        m_path_pub = this->create_publisher<nav_msgs::msg::Path>("/lio/path", 10000);
-        m_odom_pub = this->create_publisher<nav_msgs::msg::Odometry>("/lio/odom", 10000);
+        m_body_cloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("body_cloud", 10000);
+        m_world_cloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("world_cloud", 10000);
+        m_path_pub = this->create_publisher<nav_msgs::msg::Path>("lio_path", 10000);
+        m_odom_pub = this->create_publisher<nav_msgs::msg::Odometry>("lio_odom", 10000);
         m_tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(*this);
 
         m_state_data.path.poses.clear();
@@ -85,6 +86,7 @@ public:
         m_node_config.lidar_topic = config["lidar_topic"].as<std::string>();
         m_node_config.body_frame = config["body_frame"].as<std::string>();
         m_node_config.world_frame = config["world_frame"].as<std::string>();
+        m_node_config.print_time_cost = config["print_time_cost"].as<bool>();
 
         m_builder_config.lidar_filter_num = config["lidar_filter_num"].as<int>();
         m_builder_config.lidar_min_range = config["lidar_min_range"].as<double>();
@@ -242,16 +244,15 @@ public:
     {
         if (!syncPackage())
             return;
-
-        // auto start = std::chrono::high_resolution_clock::now();
-
+        auto t1 = std::chrono::high_resolution_clock::now();
         m_builder->process(m_package);
+        auto t2 = std::chrono::high_resolution_clock::now();
 
-        // auto end = std::chrono::high_resolution_clock::now();
-
-        // std::chrono::duration<double> duration = end - start;
-
-        // std::cout << RED << std::fixed << std::setprecision(4) << "duration: " << duration.count() << " s" << RESET << std::endl;
+        if (m_node_config.print_time_cost)
+        {
+            auto time_used = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count() * 1000;
+            RCLCPP_WARN(this->get_logger(), "Time cost: %.2f ms", time_used);
+        }
 
         if (m_builder->status() != BuilderStatus::MAPPING)
             return;

@@ -125,7 +125,7 @@ public:
         {
             std::lock_guard<std::mutex>(m_state.service_mutex);
             initial_guess = m_state.initial_guess;
-            m_state.service_received = false;
+            // m_state.service_received = false;
         }
         else
         {
@@ -152,10 +152,11 @@ public:
             V3D map_body_t = initial_guess.block<3, 1>(0, 3).cast<double>();
             m_state.last_offset_r = map_body_r * current_local_r.transpose();
             m_state.last_offset_t = -map_body_r * current_local_r.transpose() * current_local_t + map_body_t;
-            if (!m_state.localize_success)
+            if (!m_state.localize_success && m_state.service_received)
             {
                 std::lock_guard<std::mutex>(m_state.service_mutex);
                 m_state.localize_success = true;
+                m_state.service_received = false;
             }
         }
         sendBroadCastTF(current_time);

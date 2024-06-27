@@ -13,6 +13,7 @@ public:
 
 private:
     Config m_config;
+    bool m_pushed;
     std::shared_ptr<IESKF> m_kf;
     double m_last_propagate_end_time;
     Vec<IMUData> m_imu_cache;

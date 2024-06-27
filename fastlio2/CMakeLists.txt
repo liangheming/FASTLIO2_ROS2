@@ -30,30 +30,45 @@ find_package(sensor_msgs REQUIRED)
 find_package(livox_ros_driver2 REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 find_package(OpenMP QUIET)
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Sophus REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(OpenCV REQUIRED)
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   ${OpenMP_C_FLAGS}")
 
-set(SRC_LIST src/map_builder/commons.cpp
-             src/map_builder/ieskf.cpp
-             src/map_builder/imu_processor.cpp
+
+include_directories(
+  ${EIGEN3_INCLUDE_DIRS}
+  ${Sophus_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+)
+
+
+set(SRC_LIST src/map_builder/ieskf.cpp
              src/map_builder/ikd_Tree.cpp
+             src/map_builder/commons.cpp
+             src/utils.cpp
+             src/map_builder/pinhole_camera.cpp
+             src/map_builder/imu_processor.cpp
              src/map_builder/lidar_processor.cpp
+             src/map_builder/image_processor.cpp
              src/map_builder/map_builder.cpp
-             src/utils.cpp)
+            )
 
 add_executable(lio_node src/lio_node.cpp ${SRC_LIST})
-ament_target_dependencies(lio_node rclcpp std_msgs tf2 tf2_ros nav_msgs sensor_msgs livox_ros_driver2 pcl_conversions geometry_msgs)
+ament_target_dependencies(lio_node rclcpp std_msgs tf2 tf2_ros nav_msgs sensor_msgs livox_ros_driver2 pcl_conversions geometry_msgs cv_bridge)
 target_link_libraries(lio_node
   yaml-cpp
   ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )
 
 

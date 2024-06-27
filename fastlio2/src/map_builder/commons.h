@@ -2,6 +2,7 @@
 #include <Eigen/Eigen>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <opencv2/opencv.hpp>
 
 using PointType = pcl::PointXYZINormal;
 using CloudType = pcl::PointCloud<PointType>;
@@ -18,10 +19,8 @@ using V2F = Eigen::Vector2f;
 using M4D = Eigen::Matrix4d;
 using V4D = Eigen::Vector4d;
 
-
 template <typename T>
 using Vec = std::vector<T>;
-
 
 bool esti_plane(PointVec &points, const double &thresh, V4D &out);
 
@@ -50,6 +49,16 @@ struct Config
     bool esti_il = false;
     M3D r_il = M3D::Identity();
     V3D t_il = V3D::Zero();
+    M3D r_cl = M3D::Identity();
+    V3D t_cl = V3D::Zero();
+
+    double cam_width = 1280;
+    double cam_height = 720;
+    double cam_fx = 641.976318359375;
+    double cam_fy = 641.0658569335938;
+    double cam_cx = 641.5721435546875;
+    double cam_cy = 368.21832275390625;
+    Vec<double> cam_d{-0.05588280409574509, 0.06619580090045929, 0.0002959131670650095, 0.0008284428040497005, -0.021595485508441925};
 
     double lidar_cov_inv = 1000.0;
 };
@@ -83,4 +92,7 @@ struct SyncPackage
     CloudType::Ptr cloud;
     double cloud_start_time = 0.0;
     double cloud_end_time = 0.0;
+    double image_time = 0.0;
+    bool lidar_end;
+    cv::Mat image;
 };

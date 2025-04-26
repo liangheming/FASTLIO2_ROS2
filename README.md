@@ -107,4 +107,6 @@ ros2 service call /hba/refine_map interface/srv/RefineMap "{"maps_path": "your m
 1. [FASTLIO2](https://github.com/hku-mars/FAST_LIO)
 2. [BLAM](https://github.com/hku-mars/BALM)
 3. [HBA](https://github.com/hku-mars/HBA)
+## 性能相关的问题
+该代码主要使用timerCB作为频率触发主函数，由于ROS2中的timer、subscriber以及service的回调实际上运行在同一个线程上，在电脑性能不是好的时候，会出现调用阻塞的情况，建议使用线程并发的方式将耗时的回调独立出来(如timerCB)来提升性能
 

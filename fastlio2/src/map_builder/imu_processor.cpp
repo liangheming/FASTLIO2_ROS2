@@ -11,6 +11,7 @@ IMUProcessor::IMUProcessor(Config &config, std::shared_ptr<IESKF> kf) : m_config
     m_last_gyro.setZero();
     m_imu_cache.clear();
     m_poses_cache.clear();
+    m_pushed = true;
 }
 
 bool IMUProcessor::initialize(SyncPackage &package)
@@ -59,10 +60,14 @@ void IMUProcessor::undistort(SyncPackage &package)
     const double imu_time_end = m_imu_cache.back().time;
 
     const double cloud_time_begin = package.cloud_start_time;
-    const double propagate_time_end = package.cloud_end_time;
+    const double propagate_time_end = package.lidar_end ? package.cloud_end_time : package.image_time;
 
-    m_poses_cache.clear();
-    m_poses_cache.emplace_back(0.0, m_last_acc, m_last_gyro, m_kf->x().v, m_kf->x().t_wi, m_kf->x().r_wi);
+    if (m_pushed)
+    {
+        m_poses_cache.clear();
+        m_poses_cache.emplace_back(0.0, m_last_acc, m_last_gyro, m_kf->x().v, m_kf->x().t_wi, m_kf->x().r_wi);
+        m_pushed = false;
+    }
 
     V3D acc_val, gyro_val;
     double dt = 0.0;
@@ -98,35 +103,39 @@ void IMUProcessor::undistort(SyncPackage &package)
     m_last_imu = m_imu_cache.back();
     m_last_propagate_end_time = propagate_time_end;
 
-    M3D cur_r_wi = m_kf->x().r_wi;
-    V3D cur_t_wi = m_kf->x().t_wi;
-    M3D cur_r_il = m_kf->x().r_il;
-    V3D cur_t_il = m_kf->x().t_il;
-    auto it_pcl = package.cloud->points.end() - 1;
-
-    for (auto it_kp = m_poses_cache.end() - 1; it_kp != m_poses_cache.begin(); it_kp--)
+    if (package.lidar_end)
     {
-        auto head = it_kp - 1;
-        auto tail = it_kp;
+        M3D cur_r_wi = m_kf->x().r_wi;
+        V3D cur_t_wi = m_kf->x().t_wi;
+        M3D cur_r_il = m_kf->x().r_il;
+        V3D cur_t_il = m_kf->x().t_il;
+        auto it_pcl = package.cloud->points.end() - 1;
 
-        M3D imu_r_wi = head->rot;
-        V3D imu_t_wi = head->trans;
-        V3D imu_vel = head->vel;
-        V3D imu_acc = tail->acc;
-        V3D imu_gyro = tail->gyro;
-
-        for (; it_pcl->curvature / double(1000) > head->offset; it_pcl--)
+        for (auto it_kp = m_poses_cache.end() - 1; it_kp != m_poses_cache.begin(); it_kp--)
         {
-            dt = it_pcl->curvature / double(1000) - head->offset;
-            V3D point(it_pcl->x, it_pcl->y, it_pcl->z);
-            M3D point_rot = imu_r_wi * Sophus::SO3d::exp(imu_gyro * dt).matrix();
-            V3D point_pos = imu_t_wi + imu_vel * dt + 0.5 * imu_acc * dt * dt;
-            V3D p_compensate = cur_r_il.transpose() * (cur_r_wi.transpose() * (point_rot * (cur_r_il * point + cur_t_il) + point_pos - cur_t_wi) - cur_t_il);
-            it_pcl->x = p_compensate(0);
-            it_pcl->y = p_compensate(1);
-            it_pcl->z = p_compensate(2);
-            if (it_pcl == package.cloud->points.begin())
-                break;
+            auto head = it_kp - 1;
+            auto tail = it_kp;
+
+            M3D imu_r_wi = head->rot;
+            V3D imu_t_wi = head->trans;
+            V3D imu_vel = head->vel;
+            V3D imu_acc = tail->acc;
+            V3D imu_gyro = tail->gyro;
+
+            for (; it_pcl->curvature / double(1000) > head->offset; it_pcl--)
+            {
+                dt = it_pcl->curvature / double(1000) - head->offset;
+                V3D point(it_pcl->x, it_pcl->y, it_pcl->z);
+                M3D point_rot = imu_r_wi * Sophus::SO3d::exp(imu_gyro * dt).matrix();
+                V3D point_pos = imu_t_wi + imu_vel * dt + 0.5 * imu_acc * dt * dt;
+                V3D p_compensate = cur_r_il.transpose() * (cur_r_wi.transpose() * (point_rot * (cur_r_il * point + cur_t_il) + point_pos - cur_t_wi) - cur_t_il);
+                it_pcl->x = p_compensate(0);
+                it_pcl->y = p_compensate(1);
+                it_pcl->z = p_compensate(2);
+                if (it_pcl == package.cloud->points.begin())
+                    break;
+            }
         }
+        m_pushed = true;
     }
 }

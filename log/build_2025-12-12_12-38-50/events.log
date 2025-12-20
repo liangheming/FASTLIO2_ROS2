@@ -1,0 +1,176 @@
+[0.000000] (-) TimerEvent: {}
+[0.000365] (-) JobUnselected: {'identifier': 'hba'}
+[0.000400] (-) JobUnselected: {'identifier': 'interface'}
+[0.000423] (-) JobUnselected: {'identifier': 'localizer'}
+[0.000445] (-) JobUnselected: {'identifier': 'pgo'}
+[0.000464] (fastlio2) JobQueued: {'identifier': 'fastlio2', 'dependencies': OrderedDict()}
+[0.000997] (fastlio2) JobStarted: {'identifier': 'fastlio2'}
+[0.018522] (fastlio2) JobProgress: {'identifier': 'fastlio2', 'progress': 'cmake'}
+[0.019196] (fastlio2) Command: {'cmd': ['/usr/bin/cmake', '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/fastlio2', '-DCMAKE_INSTALL_PREFIX=/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2'], 'cwd': '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/build/fastlio2', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'sifei', 'XDG_SESSION_TYPE': 'wayland', 'CLUTTER_DISABLE_MIPMAPPED_TEXT': '1', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/home/sifei/fastlio2_ros2_ws/install/livox_sdk2/lib:/home/sifei/fastlio2_ros2_ws/install/interface/lib:/home/sifei/fastlio2_ros2_ws/install/gtsam/lib:/home/sifei/lio_ws/install/fast_lio/lib:/home/sifei/lio_ws/install/livox_ros_driver2/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/aarch64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib', 'HOME': '/home/sifei', 'OLDPWD': '/home/sifei/fastlio2_ros2_ws/src', 'DESKTOP_SESSION': 'ubuntu', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'PS0': '$(printf "%s" ${EPOCHREALTIME/./} >"$BYOBU_RUN_DIR/timer.$$")', 'SYSTEMD_EXEC_PID': '2568', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'IM_CONFIG_PHASE': '1', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/sifei/fastlio2_ros2_ws/install:/home/sifei/lio_ws/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'sifei', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'PKG_CONFIG_PATH': '/home/sifei/fastlio2_ros2_ws/install/sophus/lib/aarch64-linux-gnu/pkgconfig:/home/sifei/fastlio2_ros2_ws/install/sophus/lib/pkgconfig:/home/sifei/fastlio2_ros2_ws/install/gtsam/lib/aarch64-linux-gnu/pkgconfig:/home/sifei/fastlio2_ros2_ws/install/gtsam/lib/pkgconfig', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@wayland.service/memory.pressure', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'sifei', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'PATH': '/opt/ros/jazzy/bin:/home/sifei/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/sifei:@/tmp/.ICE-unix/2537,unix/sifei:/tmp/.ICE-unix/2537', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/dfd74eb0_56c3_40b6_9b55_bb3c2eab571b', 'GNOME_SETUP_DISPLAY': ':1', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/.mutter-Xwaylandauth.2H28G3', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'GNOME_TERMINAL_SERVICE': ':1.299', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'AMENT_PREFIX_PATH': '/home/sifei/fastlio2_ros2_ws/install/pgo:/home/sifei/fastlio2_ros2_ws/install/localizer:/home/sifei/fastlio2_ros2_ws/install/hba:/home/sifei/fastlio2_ros2_ws/install/interface:/home/sifei/fastlio2_ros2_ws/install/fastlio2:/home/sifei/lio_ws/install/pseudo_imu:/home/sifei/lio_ws/install/fast_lio:/home/sifei/lio_ws/install/livox_ros_driver2:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'BYOBU_CONFIG_DIR': '/home/sifei/.config/byobu', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'QT_IM_MODULE': 'ibus', 'BYOBU_RUN_DIR': '/dev/shm/byobu-sifei-X2Q1p1C3', 'PWD': '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/build/fastlio2', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/sifei/fastlio2_ros2_ws/install/interface/lib/python3.12/site-packages:/home/sifei/lio_ws/build/pseudo_imu:/home/sifei/lio_ws/install/pseudo_imu/lib/python3.12/site-packages:/home/sifei/lio_ws/install/fast_lio/lib/python3.12/site-packages:/home/sifei/lio_ws/install/livox_ros_driver2/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'CMAKE_PREFIX_PATH': '/home/sifei/fastlio2_ros2_ws/install/sophus:/home/sifei/fastlio2_ros2_ws/install/pgo:/home/sifei/fastlio2_ros2_ws/install/localizer:/home/sifei/fastlio2_ros2_ws/install/hba:/home/sifei/fastlio2_ros2_ws/install/interface:/home/sifei/fastlio2_ros2_ws/install/gtsam:/home/sifei/fastlio2_ros2_ws/install/fastlio2:/home/sifei/lio_ws/install/fast_lio:/home/sifei/lio_ws/install/livox_ros_driver2:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/home/sifei/lio_ws/install/pseudo_imu:/opt/ros/jazzy'}), 'shell': False}
+[0.100094] (-) TimerEvent: {}
+[0.201035] (-) TimerEvent: {}
+[0.301503] (-) TimerEvent: {}
+[0.339972] (fastlio2) StdoutLine: {'line': b'-- The C compiler identification is GNU 13.3.0\n'}
+[0.404033] (-) TimerEvent: {}
+[0.505531] (-) TimerEvent: {}
+[0.542329] (fastlio2) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 13.3.0\n'}
+[0.573655] (fastlio2) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.605684] (-) TimerEvent: {}
+[0.669064] (fastlio2) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.677373] (fastlio2) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.677936] (fastlio2) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.678496] (fastlio2) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.689467] (fastlio2) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.706112] (-) TimerEvent: {}
+[0.781448] (fastlio2) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.790781] (fastlio2) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.791098] (fastlio2) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.791534] (fastlio2) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.806228] (-) TimerEvent: {}
+[0.807100] (fastlio2) StdoutLine: {'line': b'-- Found ament_cmake: 2.5.4 (/opt/ros/jazzy/share/ament_cmake/cmake)\n'}
+[0.906360] (-) TimerEvent: {}
+[0.971861] (fastlio2) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter \n'}
+[1.007245] (-) TimerEvent: {}
+[1.107555] (-) TimerEvent: {}
+[1.140775] (fastlio2) StdoutLine: {'line': b'-- Found rclcpp: 28.1.13 (/opt/ros/jazzy/share/rclcpp/cmake)\n'}
+[1.208339] (-) TimerEvent: {}
+[1.238146] (fastlio2) StdoutLine: {'line': b'-- Found rosidl_generator_c: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)\n'}
+[1.284612] (fastlio2) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)\n'}
+[1.310265] (-) TimerEvent: {}
+[1.350053] (fastlio2) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[1.411967] (-) TimerEvent: {}
+[1.431697] (fastlio2) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[1.512111] (-) TimerEvent: {}
+[1.577096] (fastlio2) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 7.3.2 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)\n'}
+[1.582137] (fastlio2) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 8.4.3 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)\n'}
+[1.612232] (-) TimerEvent: {}
+[1.686305] (fastlio2) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/aarch64-linux-gnu/libcrypto.so (found version "3.0.13")  \n'}
+[1.705660] (fastlio2) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/jazzy/include (Required is at least version "2.13") \n'}
+[1.713010] (-) TimerEvent: {}
+[1.725805] (fastlio2) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[1.805010] (fastlio2) StdoutLine: {'line': b'-- Found std_msgs: 5.3.6 (/opt/ros/jazzy/share/std_msgs/cmake)\n'}
+[1.813120] (-) TimerEvent: {}
+[1.826145] (fastlio2) StdoutLine: {'line': b'-- Found tf2: 0.36.16 (/opt/ros/jazzy/share/tf2/cmake)\n'}
+[1.850679] (fastlio2) StdoutLine: {'line': b'-- Found tf2_ros: 0.36.16 (/opt/ros/jazzy/share/tf2_ros/cmake)\n'}
+[1.913269] (-) TimerEvent: {}
+[1.992617] (fastlio2) StdoutLine: {'line': b'-- Found nav_msgs: 5.3.6 (/opt/ros/jazzy/share/nav_msgs/cmake)\n'}
+[2.013634] (-) TimerEvent: {}
+[2.022853] (fastlio2) StdoutLine: {'line': b'-- Found sensor_msgs: 5.3.6 (/opt/ros/jazzy/share/sensor_msgs/cmake)\n'}
+[2.048747] (fastlio2) StdoutLine: {'line': b'-- Found livox_ros_driver2: 1.0.0 (/home/sifei/lio_ws/install/livox_ros_driver2/share/livox_ros_driver2/cmake)\n'}
+[2.113780] (-) TimerEvent: {}
+[2.151507] (fastlio2) StderrLine: {'line': b'\x1b[33mCMake Warning (dev) at /usr/lib/aarch64-linux-gnu/cmake/pcl/Modules/FindFLANN.cmake:45 (find_package):\n'}
+[2.151683] (fastlio2) StderrLine: {'line': b'  Policy CMP0144 is not set: find_package uses upper-case <PACKAGENAME>_ROOT\n'}
+[2.151731] (fastlio2) StderrLine: {'line': b'  variables.  Run "cmake --help-policy CMP0144" for policy details.  Use the\n'}
+[2.151771] (fastlio2) StderrLine: {'line': b'  cmake_policy command to set the policy and suppress this warning.\n'}
+[2.151809] (fastlio2) StderrLine: {'line': b'\n'}
+[2.151846] (fastlio2) StderrLine: {'line': b'  CMake variable FLANN_ROOT is set to:\n'}
+[2.152001] (fastlio2) StderrLine: {'line': b'\n'}
+[2.152067] (fastlio2) StderrLine: {'line': b'    /usr\n'}
+[2.152109] (fastlio2) StderrLine: {'line': b'\n'}
+[2.152147] (fastlio2) StderrLine: {'line': b'  For compatibility, find_package is ignoring the variable, but code in a\n'}
+[2.152185] (fastlio2) StderrLine: {'line': b'  .cmake module might still use it.\n'}
+[2.152222] (fastlio2) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[2.152263] (fastlio2) StderrLine: {'line': b'  /usr/lib/aarch64-linux-gnu/cmake/pcl/PCLConfig.cmake:261 (find_package)\n'}
+[2.152299] (fastlio2) StderrLine: {'line': b'  /usr/lib/aarch64-linux-gnu/cmake/pcl/PCLConfig.cmake:306 (find_flann)\n'}
+[2.152336] (fastlio2) StderrLine: {'line': b'  /usr/lib/aarch64-linux-gnu/cmake/pcl/PCLConfig.cmake:570 (find_external_library)\n'}
+[2.152372] (fastlio2) StderrLine: {'line': b'  /opt/ros/jazzy/share/pcl_conversions/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)\n'}
+[2.152407] (fastlio2) StderrLine: {'line': b'  /opt/ros/jazzy/share/pcl_conversions/cmake/pcl_conversionsConfig.cmake:41 (include)\n'}
+[2.152444] (fastlio2) StderrLine: {'line': b'  /home/sifei/lio_ws/install/livox_ros_driver2/share/livox_ros_driver2/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)\n'}
+[2.152481] (fastlio2) StderrLine: {'line': b'  /home/sifei/lio_ws/install/livox_ros_driver2/share/livox_ros_driver2/cmake/livox_ros_driver2Config.cmake:41 (include)\n'}
+[2.152517] (fastlio2) StderrLine: {'line': b'  CMakeLists.txt:30 (find_package)\n'}
+[2.152553] (fastlio2) StderrLine: {'line': b'This warning is for project developers.  Use -Wno-dev to suppress it.\n'}
+[2.152592] (fastlio2) StderrLine: {'line': b'\x1b[0m\n'}
+[2.155229] (fastlio2) StdoutLine: {'line': b'-- Found flann version 1.9.2\n'}
+[2.213958] (-) TimerEvent: {}
+[2.314476] (-) TimerEvent: {}
+[2.414763] (-) TimerEvent: {}
+[2.442664] (fastlio2) StdoutLine: {'line': b'-- Found OpenMP_CXX: -fopenmp (found version "4.5") \n'}
+[2.443043] (fastlio2) StdoutLine: {'line': b'-- Found OpenMP: TRUE (found version "4.5") found components: CXX \n'}
+[2.514926] (-) TimerEvent: {}
+[2.615244] (-) TimerEvent: {}
+[2.716236] (-) TimerEvent: {}
+[2.817972] (-) TimerEvent: {}
+[2.918259] (-) TimerEvent: {}
+[3.018537] (-) TimerEvent: {}
+[3.118829] (-) TimerEvent: {}
+[3.219317] (-) TimerEvent: {}
+[3.321131] (-) TimerEvent: {}
+[3.422137] (-) TimerEvent: {}
+[3.524179] (-) TimerEvent: {}
+[3.624460] (-) TimerEvent: {}
+[3.724848] (-) TimerEvent: {}
+[3.761797] (fastlio2) StdoutLine: {'line': b"-- Checking for module 'libusb-1.0'\n"}
+[3.770707] (fastlio2) StdoutLine: {'line': b'--   Found libusb-1.0, version 1.0.27\n'}
+[3.791552] (fastlio2) StdoutLine: {'line': b'-- Found libusb: /usr/lib/aarch64-linux-gnu/libusb-1.0.so  \n'}
+[3.793144] (fastlio2) StdoutLine: {'line': b'-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)\n'}
+[3.825995] (-) TimerEvent: {}
+[3.829519] (fastlio2) StdoutLine: {'line': b'-- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/aarch64-linux-gnu/libOpenNI2.so;libusb::libusb)\n'}
+[3.833395] (fastlio2) StdoutLine: {'line': b'-- Found Pcap: /usr/lib/aarch64-linux-gnu/libpcap.so  \n'}
+[3.844045] (fastlio2) StdoutLine: {'line': b'-- Found ZLIB: /usr/lib/aarch64-linux-gnu/libz.so (found version "1.3")  \n'}
+[3.858028] (fastlio2) StdoutLine: {'line': b'-- Found PNG: /usr/lib/aarch64-linux-gnu/libpng.so (found version "1.6.43") \n'}
+[3.926152] (-) TimerEvent: {}
+[4.026517] (-) TimerEvent: {}
+[4.126813] (-) TimerEvent: {}
+[4.219788] (fastlio2) StdoutLine: {'line': b'-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)\n'}
+[4.224479] (fastlio2) StdoutLine: {'line': b'-- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/aarch64-linux-gnu/libOpenNI2.so;libusb::libusb)\n'}
+[4.226939] (-) TimerEvent: {}
+[4.327183] (-) TimerEvent: {}
+[4.427700] (-) TimerEvent: {}
+[4.529107] (-) TimerEvent: {}
+[4.585514] (fastlio2) StdoutLine: {'line': b'-- Found Qhull version 8.0.2\n'}
+[4.629234] (-) TimerEvent: {}
+[4.729560] (-) TimerEvent: {}
+[4.830002] (-) TimerEvent: {}
+[4.930292] (-) TimerEvent: {}
+[4.958904] (fastlio2) StdoutLine: {'line': b'-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)\n'}
+[5.030463] (-) TimerEvent: {}
+[5.130803] (-) TimerEvent: {}
+[5.231128] (-) TimerEvent: {}
+[5.311430] (fastlio2) StdoutLine: {'line': b'-- Found PCL_COMMON: /usr/lib/aarch64-linux-gnu/libpcl_common.so  \n'}
+[5.312324] (fastlio2) StdoutLine: {'line': b'-- Found PCL_KDTREE: /usr/lib/aarch64-linux-gnu/libpcl_kdtree.so  \n'}
+[5.313277] (fastlio2) StdoutLine: {'line': b'-- Found PCL_OCTREE: /usr/lib/aarch64-linux-gnu/libpcl_octree.so  \n'}
+[5.314168] (fastlio2) StdoutLine: {'line': b'-- Found PCL_SEARCH: /usr/lib/aarch64-linux-gnu/libpcl_search.so  \n'}
+[5.315034] (fastlio2) StdoutLine: {'line': b'-- Found PCL_SAMPLE_CONSENSUS: /usr/lib/aarch64-linux-gnu/libpcl_sample_consensus.so  \n'}
+[5.315883] (fastlio2) StdoutLine: {'line': b'-- Found PCL_FILTERS: /usr/lib/aarch64-linux-gnu/libpcl_filters.so  \n'}
+[5.316326] (fastlio2) StdoutLine: {'line': b'-- Found PCL_2D: /usr/include/pcl-1.14  \n'}
+[5.316690] (fastlio2) StdoutLine: {'line': b'-- Found PCL_GEOMETRY: /usr/include/pcl-1.14  \n'}
+[5.317585] (fastlio2) StdoutLine: {'line': b'-- Found PCL_IO: /usr/lib/aarch64-linux-gnu/libpcl_io.so  \n'}
+[5.318711] (fastlio2) StdoutLine: {'line': b'-- Found PCL_FEATURES: /usr/lib/aarch64-linux-gnu/libpcl_features.so  \n'}
+[5.319573] (fastlio2) StdoutLine: {'line': b'-- Found PCL_ML: /usr/lib/aarch64-linux-gnu/libpcl_ml.so  \n'}
+[5.320505] (fastlio2) StdoutLine: {'line': b'-- Found PCL_SEGMENTATION: /usr/lib/aarch64-linux-gnu/libpcl_segmentation.so  \n'}
+[5.321705] (fastlio2) StdoutLine: {'line': b'-- Found PCL_VISUALIZATION: /usr/lib/aarch64-linux-gnu/libpcl_visualization.so  \n'}
+[5.322759] (fastlio2) StdoutLine: {'line': b'-- Found PCL_SURFACE: /usr/lib/aarch64-linux-gnu/libpcl_surface.so  \n'}
+[5.323703] (fastlio2) StdoutLine: {'line': b'-- Found PCL_REGISTRATION: /usr/lib/aarch64-linux-gnu/libpcl_registration.so  \n'}
+[5.324758] (fastlio2) StdoutLine: {'line': b'-- Found PCL_KEYPOINTS: /usr/lib/aarch64-linux-gnu/libpcl_keypoints.so  \n'}
+[5.325996] (fastlio2) StdoutLine: {'line': b'-- Found PCL_TRACKING: /usr/lib/aarch64-linux-gnu/libpcl_tracking.so  \n'}
+[5.326928] (fastlio2) StdoutLine: {'line': b'-- Found PCL_RECOGNITION: /usr/lib/aarch64-linux-gnu/libpcl_recognition.so  \n'}
+[5.328143] (fastlio2) StdoutLine: {'line': b'-- Found PCL_STEREO: /usr/lib/aarch64-linux-gnu/libpcl_stereo.so  \n'}
+[5.329100] (fastlio2) StdoutLine: {'line': b'-- Found PCL_APPS: /usr/lib/aarch64-linux-gnu/libpcl_apps.so  \n'}
+[5.330004] (fastlio2) StdoutLine: {'line': b'-- Found PCL_IN_HAND_SCANNER: /usr/include/pcl-1.14  \n'}
+[5.330324] (fastlio2) StdoutLine: {'line': b'-- Found PCL_MODELER: /usr/include/pcl-1.14  \n'}
+[5.330768] (fastlio2) StdoutLine: {'line': b'-- Found PCL_POINT_CLOUD_EDITOR: /usr/include/pcl-1.14  \n'}
+[5.331194] (-) TimerEvent: {}
+[5.331585] (fastlio2) StdoutLine: {'line': b'-- Found PCL_OUTOFCORE: /usr/lib/aarch64-linux-gnu/libpcl_outofcore.so  \n'}
+[5.332565] (fastlio2) StdoutLine: {'line': b'-- Found PCL_PEOPLE: /usr/lib/aarch64-linux-gnu/libpcl_people.so  \n'}
+[5.383526] (fastlio2) StdoutLine: {'line': b'-- Found eigen3_cmake_module: 0.3.0 (/opt/ros/jazzy/share/eigen3_cmake_module/cmake)\n'}
+[5.385344] (fastlio2) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.4.0") \n'}
+[5.385454] (fastlio2) StdoutLine: {'line': b'-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target\n'}
+[5.431342] (-) TimerEvent: {}
+[5.483518] (fastlio2) StderrLine: {'line': b'\x1b[33mCMake Warning (dev) at CMakeLists.txt:35 (find_package):\n'}
+[5.483701] (fastlio2) StderrLine: {'line': b'  Policy CMP0074 is not set: find_package uses <PackageName>_ROOT variables.\n'}
+[5.483751] (fastlio2) StderrLine: {'line': b'  Run "cmake --help-policy CMP0074" for policy details.  Use the cmake_policy\n'}
+[5.483793] (fastlio2) StderrLine: {'line': b'  command to set the policy and suppress this warning.\n'}
+[5.483833] (fastlio2) StderrLine: {'line': b'\n'}
+[5.483934] (fastlio2) StderrLine: {'line': b'  CMake variable PCL_ROOT is set to:\n'}
+[5.484005] (fastlio2) StderrLine: {'line': b'\n'}
+[5.484045] (fastlio2) StderrLine: {'line': b'    /usr\n'}
+[5.484083] (fastlio2) StderrLine: {'line': b'\n'}
+[5.484121] (fastlio2) StderrLine: {'line': b'  For compatibility, CMake is ignoring the variable.\n'}
+[5.484169] (fastlio2) StderrLine: {'line': b'This warning is for project developers.  Use -Wno-dev to suppress it.\n'}
+[5.484208] (fastlio2) StderrLine: {'line': b'\x1b[0m\n'}
+[5.496636] (fastlio2) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found suitable version "3.4.0", minimum required is "3.4.0") \n'}
+[5.529372] (fastlio2) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.17.3 (/opt/ros/jazzy/share/ament_lint_auto/cmake)\n'}
+[5.531433] (-) TimerEvent: {}
+[5.570766] (fastlio2) CommandEnded: {'returncode': -2}
+[5.585361] (fastlio2) JobEnded: {'identifier': 'fastlio2', 'rc': 'SIGINT'}
+[5.597239] (-) EventReactorShutdown: {}

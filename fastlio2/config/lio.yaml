@@ -1,12 +1,14 @@
+use_sim_time: true
+
 imu_topic: /livox/imu
 lidar_topic: /livox/lidar
 body_frame: body
-world_frame: lidar
+world_frame: camera_init
 print_time_cost: false
 
-lidar_filter_num: 6
+lidar_filter_num: 1
 lidar_min_range: 0.5
-lidar_max_range: 30.0
+lidar_max_range: 100.0
 scan_resolution: 0.15
 map_resolution: 0.3
 

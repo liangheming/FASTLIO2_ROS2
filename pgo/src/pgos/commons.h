@@ -21,10 +21,12 @@ struct PoseWithTime {
     uint32_t nsec;
     double second;
     void setTime(int32_t sec, uint32_t nsec);
-    // double second() const;
 };
 
-struct CloudWithPose {
-    CloudType::Ptr cloud;
+struct EIGEN_ALIGN16 CloudWithPose
+{
     PoseWithTime pose;
+    CloudType::Ptr cloud;
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

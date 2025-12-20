@@ -1,0 +1,149 @@
+[0.255s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'fastlio2', '--cmake-clean-cache']
+[0.255s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=4, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['fastlio2'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=True, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0xea817c00e120>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0xea817bfbf9b0>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0xea817bfbf9b0>>, mixin_verb=('build',))
+[0.307s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.307s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.307s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.307s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.307s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.307s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.307s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2'
+[0.307s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.307s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.307s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.307s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.308s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.308s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.308s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.308s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.308s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extensions ['ignore', 'ignore_ament_install']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extension 'ignore'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extension 'ignore_ament_install'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extensions ['colcon_pkg']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extension 'colcon_pkg'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extensions ['colcon_meta']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extension 'colcon_meta'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extensions ['ros']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(fastlio2) by extension 'ros'
+[0.342s] DEBUG:colcon.colcon_core.package_identification:Package 'fastlio2' with type 'ros.ament_cmake' and name 'fastlio2'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extensions ['ignore', 'ignore_ament_install']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extension 'ignore'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extension 'ignore_ament_install'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extensions ['colcon_pkg']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extension 'colcon_pkg'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extensions ['colcon_meta']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extension 'colcon_meta'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extensions ['ros']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(hba) by extension 'ros'
+[0.343s] DEBUG:colcon.colcon_core.package_identification:Package 'hba' with type 'ros.ament_cmake' and name 'hba'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extensions ['ignore', 'ignore_ament_install']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extension 'ignore'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extension 'ignore_ament_install'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extensions ['colcon_pkg']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extension 'colcon_pkg'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extensions ['colcon_meta']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extension 'colcon_meta'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extensions ['ros']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(interface) by extension 'ros'
+[0.344s] DEBUG:colcon.colcon_core.package_identification:Package 'interface' with type 'ros.ament_cmake' and name 'interface'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extensions ['ignore', 'ignore_ament_install']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extension 'ignore'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extension 'ignore_ament_install'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extensions ['colcon_pkg']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extension 'colcon_pkg'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extensions ['colcon_meta']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extension 'colcon_meta'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extensions ['ros']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(localizer) by extension 'ros'
+[0.345s] DEBUG:colcon.colcon_core.package_identification:Package 'localizer' with type 'ros.ament_cmake' and name 'localizer'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extensions ['ignore', 'ignore_ament_install']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extension 'ignore'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extension 'ignore_ament_install'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extensions ['colcon_pkg']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extension 'colcon_pkg'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extensions ['colcon_meta']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extension 'colcon_meta'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extensions ['ros']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(pgo) by extension 'ros'
+[0.346s] DEBUG:colcon.colcon_core.package_identification:Package 'pgo' with type 'ros.ament_cmake' and name 'pgo'
+[0.346s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.346s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.346s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.346s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.346s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.372s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'interface' in 'interface'
+[0.373s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'hba' in 'hba'
+[0.373s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'localizer' in 'localizer'
+[0.373s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'pgo' in 'pgo'
+[0.373s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[0.373s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[0.389s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 8 installed packages in /home/sifei/fastlio2_ros2_ws/install
+[0.392s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 3 installed packages in /home/sifei/lio_ws/install
+[0.394s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 290 installed packages in /opt/ros/jazzy
+[0.395s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'cmake_args' from command line to 'None'
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'cmake_target' from command line to 'None'
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'cmake_clean_cache' from command line to 'True'
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'cmake_clean_first' from command line to 'False'
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'cmake_force_configure' from command line to 'False'
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'ament_cmake_args' from command line to 'None'
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'catkin_cmake_args' from command line to 'None'
+[0.522s] Level 5:colcon.colcon_core.verb:set package 'fastlio2' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.522s] DEBUG:colcon.colcon_core.verb:Building package 'fastlio2' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/build/fastlio2', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': True, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2', 'merge_install': False, 'path': '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/fastlio2', 'symlink_install': False, 'test_result_base': None}
+[0.522s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.523s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.523s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/fastlio2' with build type 'ament_cmake'
+[0.523s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/fastlio2'
+[0.530s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.531s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.531s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.542s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/build/fastlio2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/sifei/lio_ws/install/pseudo_imu:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/fastlio2 -DCMAKE_INSTALL_PREFIX=/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2
+[6.078s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete was interrupted
+[6.078s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete again
+[6.093s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(fastlio2)
+[6.094s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/build/fastlio2' returned '-2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/sifei/lio_ws/install/pseudo_imu:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/fastlio2 -DCMAKE_INSTALL_PREFIX=/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2
+[6.102s] Level 1:colcon.colcon_core.environment:checking '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2' for CMake module files
+[6.103s] Level 1:colcon.colcon_core.environment:checking '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2' for CMake config files
+[6.103s] Level 1:colcon.colcon_core.environment:checking '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/bin'
+[6.103s] Level 1:colcon.colcon_core.environment:checking '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/lib/pkgconfig/fastlio2.pc'
+[6.103s] Level 1:colcon.colcon_core.environment:checking '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/lib/python3.12/site-packages'
+[6.103s] Level 1:colcon.colcon_core.environment:checking '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/bin'
+[6.104s] INFO:colcon.colcon_core.shell:Creating package script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/share/fastlio2/package.ps1'
+[6.105s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/share/fastlio2/package.dsv'
+[6.105s] INFO:colcon.colcon_core.shell:Creating package script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/share/fastlio2/package.sh'
+[6.106s] INFO:colcon.colcon_core.shell:Creating package script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/share/fastlio2/package.bash'
+[6.107s] INFO:colcon.colcon_core.shell:Creating package script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/share/fastlio2/package.zsh'
+[6.108s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2/share/colcon-core/packages/fastlio2)
+[6.118s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished
+[6.119s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[6.119s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[6.119s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[6.141s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[6.141s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[6.141s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[6.332s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[6.333s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/local_setup.ps1'
+[6.336s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/_local_setup_util_ps1.py'
+[6.340s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/setup.ps1'
+[6.343s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/local_setup.sh'
+[6.345s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/_local_setup_util_sh.py'
+[6.346s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/setup.sh'
+[6.347s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/local_setup.bash'
+[6.348s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/setup.bash'
+[6.350s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/local_setup.zsh'
+[6.351s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/setup.zsh'

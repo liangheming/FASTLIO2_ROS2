@@ -81,7 +81,6 @@ void LidarProcessor::trimCloudMap()
     PointVec points_history;
     m_ikdtree->acquire_removed_points(points_history);
 
-    // 删除局部地图之外的点云
     if (m_local_map.cub_to_rm.size() > 0)
         m_ikdtree->Delete_Point_Boxes(m_local_map.cub_to_rm);
     return;
@@ -104,7 +103,7 @@ void LidarProcessor::incrCloudMap()
         m_cloud_down_world->points[i].y = point(1);
         m_cloud_down_world->points[i].z = point(2);
         m_cloud_down_world->points[i].intensity = m_cloud_down_lidar->points[i].intensity;
-        // 如果该点附近没有近邻点则需要添加到地图中
+
         if (m_nearest_points[i].empty())
         {
             point_to_add.push_back(m_cloud_down_world->points[i]);
@@ -118,7 +117,6 @@ void LidarProcessor::incrCloudMap()
         mid_point.y = std::floor(m_cloud_down_world->points[i].y / m_config.map_resolution) * m_config.map_resolution + 0.5 * m_config.map_resolution;
         mid_point.z = std::floor(m_cloud_down_world->points[i].z / m_config.map_resolution) * m_config.map_resolution + 0.5 * m_config.map_resolution;
 
-        // 如果该点所在的voxel没有点，则直接加入地图，且不需要降采样
         if (fabs(points_near[0].x - mid_point.x) > 0.5 * m_config.map_resolution && fabs(points_near[0].y - mid_point.y) > 0.5 * m_config.map_resolution && fabs(points_near[0].z - mid_point.z) > 0.5 * m_config.map_resolution)
         {
             point_no_need_downsample.push_back(m_cloud_down_world->points[i]);
@@ -128,10 +126,8 @@ void LidarProcessor::incrCloudMap()
 
         for (int readd_i = 0; readd_i < m_config.near_search_num; readd_i++)
         {
-            // 如果该点的近邻点较少，则需要加入到地图中
             if (points_near.size() < static_cast<size_t>(m_config.near_search_num))
                 break;
-            // 如果该点的近邻点距离voxel中心点的距离比该点距离voxel中心点更近，则不需要加入该点
             if (sq_dist(points_near[readd_i], mid_point) < dist)
             {
                 need_add = false;
@@ -192,7 +188,7 @@ void LidarProcessor::updateLossFunc(State &state, SharedState &share_data)
         std::vector<float> point_sq_dist(m_config.near_search_num);
         auto &points_near = m_nearest_points[i];
         m_ikdtree->Nearest_Search(point_world, m_config.near_search_num, points_near, point_sq_dist);
-        if (points_near.size() >= static_cast<size_t>(m_config.near_search_num) && point_sq_dist[m_config.near_search_num - 1] <= 5)
+        if (points_near.size() >= static_cast<size_t>(m_config.near_search_num) && point_sq_dist[m_config.near_search_num - 1] <= 25.0f)
             m_point_selected_flag[i] = true;
         else
             m_point_selected_flag[i] = false;
@@ -204,7 +200,9 @@ void LidarProcessor::updateLossFunc(State &state, SharedState &share_data)
         if (esti_plane(points_near, 0.1, pabcd))
         {
             double pd2 = pabcd(0) * point_world_vec(0) + pabcd(1) * point_world_vec(1) + pabcd(2) * point_world_vec(2) + pabcd(3);
-            double s = 1 - 0.9 * std::fabs(pd2) / std::sqrt(point_body_vec.norm());
+            // double s = 1 - 0.9 * std::fabs(pd2) / std::sqrt(point_body_vec.norm());
+            const double range = point_body_vec.norm() + 1e-3; 
+            double s = 1.0 - 0.9 * std::fabs(pd2) / range;
             if (s > 0.9)
             {
                 m_point_selected_flag[i] = true;
@@ -242,7 +240,9 @@ void LidarProcessor::updateLossFunc(State &state, SharedState &share_data)
         const PointType &norm_p = m_effect_norm_vec->points[i];
         Eigen::Vector3d laser_p_vec(laser_p.x, laser_p.y, laser_p.z);
         Eigen::Vector3d norm_vec(norm_p.x, norm_p.y, norm_p.z);
-        Eigen::Matrix<double, 1, 3> B = -norm_vec.transpose() * state.r_wi * Sophus::SO3d::hat(state.r_il * laser_p_vec + state.t_wi);
+        Eigen::Matrix<double, 1, 3> B = -norm_vec.transpose() * state.r_wi * Sophus::SO3d::hat(state.r_il * laser_p_vec + state.t_il);
+
+        // Eigen::Matrix<double, 1, 3> B = -norm_vec.transpose() * state.r_wi * Sophus::SO3d::hat(state.r_il * laser_p_vec + state.t_wi);
         J.block<1, 3>(0, 0) = B;
         J.block<1, 3>(0, 3) = norm_vec.transpose();
         if (m_config.esti_il)

@@ -56,8 +56,34 @@ target_link_libraries(lio_node
   ${PCL_LIBRARIES}
 )
 
+add_executable(pc2_to_livox_node
+  src/pc2_to_livox_node.cpp
+)
 
-install(TARGETS lio_node DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies(pc2_to_livox_node
+  rclcpp
+  sensor_msgs
+  livox_ros_driver2
+)
+
+add_executable(livox_custom_to_pc2 src/livox_custom_to_pc2.cpp)
+
+ament_target_dependencies(livox_custom_to_pc2
+  rclcpp
+  sensor_msgs
+  livox_ros_driver2
+  pcl_conversions
+)
+
+target_link_libraries(livox_custom_to_pc2
+  ${PCL_LIBRARIES}
+)
+
+install(TARGETS livox_custom_to_pc2
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS lio_node pc2_to_livox_node DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})

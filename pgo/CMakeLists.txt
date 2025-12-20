@@ -43,6 +43,11 @@ set(SRC_LIST src/pgos/commons.cpp
              src/pgos/simple_pgo.cpp)
 
 add_executable(pgo_node src/pgo_node.cpp ${SRC_LIST})
+target_compile_definitions(pgo_node PUBLIC
+  EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT
+  EIGEN_DONT_ALIGN_STATICALLY
+)
+
 ament_target_dependencies(pgo_node rclcpp std_msgs sensor_msgs nav_msgs message_filters pcl_conversions tf2_ros geometry_msgs visualization_msgs interface GTSAM)
 target_link_libraries(pgo_node ${PCL_LIBRARIES} gtsam yaml-cpp)
 

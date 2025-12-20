@@ -1,0 +1,111 @@
+[0.019s] Invoking command in '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/build/fastlio2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/sifei/lio_ws/install/pseudo_imu:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/fastlio2 -DCMAKE_INSTALL_PREFIX=/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2
+[0.339s] -- The C compiler identification is GNU 13.3.0
+[0.541s] -- The CXX compiler identification is GNU 13.3.0
+[0.573s] -- Detecting C compiler ABI info
+[0.668s] -- Detecting C compiler ABI info - done
+[0.676s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.677s] -- Detecting C compile features
+[0.678s] -- Detecting C compile features - done
+[0.689s] -- Detecting CXX compiler ABI info
+[0.781s] -- Detecting CXX compiler ABI info - done
+[0.790s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.790s] -- Detecting CXX compile features
+[0.791s] -- Detecting CXX compile features - done
+[0.806s] -- Found ament_cmake: 2.5.4 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.971s] -- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+[1.140s] -- Found rclcpp: 28.1.13 (/opt/ros/jazzy/share/rclcpp/cmake)
+[1.237s] -- Found rosidl_generator_c: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+[1.284s] -- Found rosidl_generator_cpp: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+[1.349s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.431s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.576s] -- Found rmw_implementation_cmake: 7.3.2 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+[1.581s] -- Found rmw_fastrtps_cpp: 8.4.3 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)
+[1.685s] -- Found OpenSSL: /usr/lib/aarch64-linux-gnu/libcrypto.so (found version "3.0.13")  
+[1.705s] -- Found FastRTPS: /opt/ros/jazzy/include (Required is at least version "2.13") 
+[1.725s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[1.804s] -- Found std_msgs: 5.3.6 (/opt/ros/jazzy/share/std_msgs/cmake)
+[1.825s] -- Found tf2: 0.36.16 (/opt/ros/jazzy/share/tf2/cmake)
+[1.850s] -- Found tf2_ros: 0.36.16 (/opt/ros/jazzy/share/tf2_ros/cmake)
+[1.992s] -- Found nav_msgs: 5.3.6 (/opt/ros/jazzy/share/nav_msgs/cmake)
+[2.022s] -- Found sensor_msgs: 5.3.6 (/opt/ros/jazzy/share/sensor_msgs/cmake)
+[2.048s] -- Found livox_ros_driver2: 1.0.0 (/home/sifei/lio_ws/install/livox_ros_driver2/share/livox_ros_driver2/cmake)
+[2.151s] [33mCMake Warning (dev) at /usr/lib/aarch64-linux-gnu/cmake/pcl/Modules/FindFLANN.cmake:45 (find_package):
+[2.151s]   Policy CMP0144 is not set: find_package uses upper-case <PACKAGENAME>_ROOT
+[2.151s]   variables.  Run "cmake --help-policy CMP0144" for policy details.  Use the
+[2.151s]   cmake_policy command to set the policy and suppress this warning.
+[2.151s] 
+[2.151s]   CMake variable FLANN_ROOT is set to:
+[2.151s] 
+[2.151s]     /usr
+[2.151s] 
+[2.151s]   For compatibility, find_package is ignoring the variable, but code in a
+[2.151s]   .cmake module might still use it.
+[2.151s] Call Stack (most recent call first):
+[2.151s]   /usr/lib/aarch64-linux-gnu/cmake/pcl/PCLConfig.cmake:261 (find_package)
+[2.151s]   /usr/lib/aarch64-linux-gnu/cmake/pcl/PCLConfig.cmake:306 (find_flann)
+[2.151s]   /usr/lib/aarch64-linux-gnu/cmake/pcl/PCLConfig.cmake:570 (find_external_library)
+[2.151s]   /opt/ros/jazzy/share/pcl_conversions/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+[2.151s]   /opt/ros/jazzy/share/pcl_conversions/cmake/pcl_conversionsConfig.cmake:41 (include)
+[2.151s]   /home/sifei/lio_ws/install/livox_ros_driver2/share/livox_ros_driver2/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+[2.151s]   /home/sifei/lio_ws/install/livox_ros_driver2/share/livox_ros_driver2/cmake/livox_ros_driver2Config.cmake:41 (include)
+[2.152s]   CMakeLists.txt:30 (find_package)
+[2.152s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[2.152s] [0m
+[2.154s] -- Found flann version 1.9.2
+[2.442s] -- Found OpenMP_CXX: -fopenmp (found version "4.5") 
+[2.442s] -- Found OpenMP: TRUE (found version "4.5") found components: CXX 
+[3.761s] -- Checking for module 'libusb-1.0'
+[3.770s] --   Found libusb-1.0, version 1.0.27
+[3.791s] -- Found libusb: /usr/lib/aarch64-linux-gnu/libusb-1.0.so  
+[3.792s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[3.829s] -- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/aarch64-linux-gnu/libOpenNI2.so;libusb::libusb)
+[3.832s] -- Found Pcap: /usr/lib/aarch64-linux-gnu/libpcap.so  
+[3.843s] -- Found ZLIB: /usr/lib/aarch64-linux-gnu/libz.so (found version "1.3")  
+[3.857s] -- Found PNG: /usr/lib/aarch64-linux-gnu/libpng.so (found version "1.6.43") 
+[4.219s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[4.224s] -- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/aarch64-linux-gnu/libOpenNI2.so;libusb::libusb)
+[4.585s] -- Found Qhull version 8.0.2
+[4.958s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[5.311s] -- Found PCL_COMMON: /usr/lib/aarch64-linux-gnu/libpcl_common.so  
+[5.311s] -- Found PCL_KDTREE: /usr/lib/aarch64-linux-gnu/libpcl_kdtree.so  
+[5.312s] -- Found PCL_OCTREE: /usr/lib/aarch64-linux-gnu/libpcl_octree.so  
+[5.313s] -- Found PCL_SEARCH: /usr/lib/aarch64-linux-gnu/libpcl_search.so  
+[5.314s] -- Found PCL_SAMPLE_CONSENSUS: /usr/lib/aarch64-linux-gnu/libpcl_sample_consensus.so  
+[5.315s] -- Found PCL_FILTERS: /usr/lib/aarch64-linux-gnu/libpcl_filters.so  
+[5.315s] -- Found PCL_2D: /usr/include/pcl-1.14  
+[5.316s] -- Found PCL_GEOMETRY: /usr/include/pcl-1.14  
+[5.317s] -- Found PCL_IO: /usr/lib/aarch64-linux-gnu/libpcl_io.so  
+[5.318s] -- Found PCL_FEATURES: /usr/lib/aarch64-linux-gnu/libpcl_features.so  
+[5.319s] -- Found PCL_ML: /usr/lib/aarch64-linux-gnu/libpcl_ml.so  
+[5.320s] -- Found PCL_SEGMENTATION: /usr/lib/aarch64-linux-gnu/libpcl_segmentation.so  
+[5.321s] -- Found PCL_VISUALIZATION: /usr/lib/aarch64-linux-gnu/libpcl_visualization.so  
+[5.322s] -- Found PCL_SURFACE: /usr/lib/aarch64-linux-gnu/libpcl_surface.so  
+[5.323s] -- Found PCL_REGISTRATION: /usr/lib/aarch64-linux-gnu/libpcl_registration.so  
+[5.324s] -- Found PCL_KEYPOINTS: /usr/lib/aarch64-linux-gnu/libpcl_keypoints.so  
+[5.325s] -- Found PCL_TRACKING: /usr/lib/aarch64-linux-gnu/libpcl_tracking.so  
+[5.326s] -- Found PCL_RECOGNITION: /usr/lib/aarch64-linux-gnu/libpcl_recognition.so  
+[5.327s] -- Found PCL_STEREO: /usr/lib/aarch64-linux-gnu/libpcl_stereo.so  
+[5.328s] -- Found PCL_APPS: /usr/lib/aarch64-linux-gnu/libpcl_apps.so  
+[5.329s] -- Found PCL_IN_HAND_SCANNER: /usr/include/pcl-1.14  
+[5.329s] -- Found PCL_MODELER: /usr/include/pcl-1.14  
+[5.330s] -- Found PCL_POINT_CLOUD_EDITOR: /usr/include/pcl-1.14  
+[5.331s] -- Found PCL_OUTOFCORE: /usr/lib/aarch64-linux-gnu/libpcl_outofcore.so  
+[5.332s] -- Found PCL_PEOPLE: /usr/lib/aarch64-linux-gnu/libpcl_people.so  
+[5.383s] -- Found eigen3_cmake_module: 0.3.0 (/opt/ros/jazzy/share/eigen3_cmake_module/cmake)
+[5.384s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[5.384s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[5.483s] [33mCMake Warning (dev) at CMakeLists.txt:35 (find_package):
+[5.483s]   Policy CMP0074 is not set: find_package uses <PackageName>_ROOT variables.
+[5.483s]   Run "cmake --help-policy CMP0074" for policy details.  Use the cmake_policy
+[5.483s]   command to set the policy and suppress this warning.
+[5.483s] 
+[5.483s]   CMake variable PCL_ROOT is set to:
+[5.483s] 
+[5.483s]     /usr
+[5.483s] 
+[5.483s]   For compatibility, CMake is ignoring the variable.
+[5.483s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[5.483s] [0m
+[5.496s] -- Found Eigen3: TRUE (found suitable version "3.4.0", minimum required is "3.4.0") 
+[5.528s] -- Found ament_lint_auto: 0.17.3 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+[5.570s] Invoked command in '/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/build/fastlio2' returned '-2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/sifei/lio_ws/install/pseudo_imu:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/fastlio2 -DCMAKE_INSTALL_PREFIX=/home/sifei/fastlio2_ros2_ws/src/FASTLIO2_ROS2/install/fastlio2

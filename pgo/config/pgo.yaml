@@ -1,4 +1,4 @@
-cloud_topic: /fastlio2/body_cloud
+cloud_topic: /livox/lidar
 odom_topic: /fastlio2/lio_odom
 map_frame: map
 local_frame: lidar

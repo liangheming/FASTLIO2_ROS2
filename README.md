@@ -215,7 +215,7 @@ ros2 launch localizer localizer_launch.py
 # 在RViz中点击 "2D Pose Estimate" 设置初始位姿
 # 或者通过service设置：
 ros2 service call /localizer/relocalize interface/srv/Relocalize \
-  "{pcd_path: '/path/to/global_map.pcd', x: 0.0, y: 0.0, z: 0.0, yaw: 0.0, pitch: 0.0, roll: 0.0}"
+  "{x: 0.0, y: 0.0, z: 0.0, yaw: 0.0, pitch: 0.0, roll: 0.0}"
 
 # 播放数据或启动实时雷达
 ros2 bag play your_bag_file
@@ -261,7 +261,7 @@ ros2 topic pub --once /map_request/pcd std_msgs/msg/String "{data: '/path/to/new
 **服务：**
 | 名称 | 类型 | 说明 |
 |------|------|------|
-| `/localizer/relocalize` | interface/srv/Relocalize | 加载地图并设置初始位姿（备用） |
+| `/localizer/relocalize` | interface/srv/Relocalize | 设置初始位姿 (x,y,z,yaw,pitch,roll) |
 | `/localizer/relocalize_check` | interface/srv/IsValid | 检查定位是否成功 |
 
 #### RViz可视化配置

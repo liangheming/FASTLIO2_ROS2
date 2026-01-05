@@ -15,6 +15,8 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 #include "tf2_ros/transform_broadcaster.h"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -28,6 +30,8 @@ struct NodeConfig
     std::string lidar_topic = "/livox/lidar";
     std::string body_frame = "body";
     std::string world_frame = "lidar";
+    std::string imu_frame = "imu_link";
+    std::string lidar_frame = "rslidar";
     bool print_time_cost = false;
 };
 struct StateData
@@ -48,6 +52,11 @@ public:
     LIONode() : Node("lio_node")
     {
         RCLCPP_INFO(this->get_logger(), "LIO Node Started");
+
+        // Initialize TF buffer and listener for extrinsics lookup
+        m_tf_buffer = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+        m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
+
         loadParameters();
 
         m_imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(m_node_config.imu_topic, 10, std::bind(&LIONode::imuCB, this, std::placeholders::_1));
@@ -106,11 +115,70 @@ public:
         m_builder_config.ieskf_max_iter = config["ieskf_max_iter"].as<int>();
         m_builder_config.gravity_align = config["gravity_align"].as<bool>();
         m_builder_config.esti_il = config["esti_il"].as<bool>();
-        std::vector<double> t_il_vec = config["t_il"].as<std::vector<double>>();
-        std::vector<double> r_il_vec = config["r_il"].as<std::vector<double>>();
-        m_builder_config.t_il << t_il_vec[0], t_il_vec[1], t_il_vec[2];
-        m_builder_config.r_il << r_il_vec[0], r_il_vec[1], r_il_vec[2], r_il_vec[3], r_il_vec[4], r_il_vec[5], r_il_vec[6], r_il_vec[7], r_il_vec[8];
+
+        // Try to read imu_frame and lidar_frame from config (optional)
+        if (config["imu_frame"])
+            m_node_config.imu_frame = config["imu_frame"].as<std::string>();
+        if (config["lidar_frame"])
+            m_node_config.lidar_frame = config["lidar_frame"].as<std::string>();
+
+        // Try to get extrinsics from TF first
+        bool tf_success = loadExtrinsicsFromTF();
+
+        if (!tf_success)
+        {
+            // Fall back to config file
+            RCLCPP_WARN(this->get_logger(), "Using extrinsics from config file");
+            std::vector<double> t_il_vec = config["t_il"].as<std::vector<double>>();
+            std::vector<double> r_il_vec = config["r_il"].as<std::vector<double>>();
+            m_builder_config.t_il << t_il_vec[0], t_il_vec[1], t_il_vec[2];
+            m_builder_config.r_il << r_il_vec[0], r_il_vec[1], r_il_vec[2], r_il_vec[3], r_il_vec[4], r_il_vec[5], r_il_vec[6], r_il_vec[7], r_il_vec[8];
+        }
+
         m_builder_config.lidar_cov_inv = config["lidar_cov_inv"].as<double>();
+    }
+
+    bool loadExtrinsicsFromTF()
+    {
+        try
+        {
+            // Wait a bit for TF to be available
+            if (!m_tf_buffer->canTransform(m_node_config.lidar_frame, m_node_config.imu_frame,
+                                           tf2::TimePointZero, tf2::durationFromSec(2.0)))
+            {
+                RCLCPP_WARN(this->get_logger(), "TF from %s to %s not available",
+                            m_node_config.imu_frame.c_str(), m_node_config.lidar_frame.c_str());
+                return false;
+            }
+
+            geometry_msgs::msg::TransformStamped tf_stamped;
+            tf_stamped = m_tf_buffer->lookupTransform(m_node_config.lidar_frame, m_node_config.imu_frame,
+                                                      tf2::TimePointZero);
+
+            // Extract translation
+            m_builder_config.t_il << tf_stamped.transform.translation.x,
+                                     tf_stamped.transform.translation.y,
+                                     tf_stamped.transform.translation.z;
+
+            // Extract rotation (quaternion to rotation matrix)
+            Eigen::Quaterniond q(tf_stamped.transform.rotation.w,
+                                 tf_stamped.transform.rotation.x,
+                                 tf_stamped.transform.rotation.y,
+                                 tf_stamped.transform.rotation.z);
+            m_builder_config.r_il = q.toRotationMatrix();
+
+            RCLCPP_INFO(this->get_logger(), "Loaded extrinsics from TF (%s -> %s)",
+                        m_node_config.imu_frame.c_str(), m_node_config.lidar_frame.c_str());
+            RCLCPP_INFO(this->get_logger(), "  t_il: [%.6f, %.6f, %.6f]",
+                        m_builder_config.t_il.x(), m_builder_config.t_il.y(), m_builder_config.t_il.z());
+
+            return true;
+        }
+        catch (tf2::TransformException &ex)
+        {
+            RCLCPP_WARN(this->get_logger(), "TF lookup failed: %s", ex.what());
+            return false;
+        }
     }
 
     void imuCB(const sensor_msgs::msg::Imu::SharedPtr msg)
@@ -289,6 +357,8 @@ private:
     std::shared_ptr<IESKF> m_kf;
     std::shared_ptr<MapBuilder> m_builder;
     std::shared_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster;
+    std::shared_ptr<tf2_ros::Buffer> m_tf_buffer;
+    std::shared_ptr<tf2_ros::TransformListener> m_tf_listener;
 };
 
 int main(int argc, char **argv)

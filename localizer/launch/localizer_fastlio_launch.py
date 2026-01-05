@@ -31,7 +31,7 @@ def generate_launch_description():
         [FindPackageShare("localizer"), "rviz", "localizer.rviz"]
     )
     localizer_config_path = PathJoinSubstitution(
-        [FindPackageShare("localizer"), "config", "localizer.yaml"]
+        [FindPackageShare("localizer"), "config", "localizer_fastlio2.yaml"]
     )
 
     # Use lio_airy.yaml for RoboSense Airy

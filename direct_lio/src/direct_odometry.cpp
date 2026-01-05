@@ -45,14 +45,17 @@ dlio::OdomNode::OdomNode() : Node("dlio_odom_node")
   this->lidar_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   auto lidar_sub_opt = rclcpp::SubscriptionOptions();
   lidar_sub_opt.callback_group = this->lidar_cb_group;
+  // 使用 RELIABLE QoS 以匹配 rslidar_sdk 的发布设置
+  rclcpp::QoS reliable_qos(10);
+  reliable_qos.reliability(rclcpp::ReliabilityPolicy::Reliable);
   this->lidar_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-      "pointcloud", rclcpp::SensorDataQoS(), std::bind(&dlio::OdomNode::callbackPointCloud, this, std::placeholders::_1), lidar_sub_opt);
+      "pointcloud", reliable_qos, std::bind(&dlio::OdomNode::callbackPointCloud, this, std::placeholders::_1), lidar_sub_opt);
 
   this->imu_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   auto imu_sub_opt = rclcpp::SubscriptionOptions();
   imu_sub_opt.callback_group = this->imu_cb_group;
   this->imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(
-      "imu", rclcpp::SensorDataQoS(), std::bind(&dlio::OdomNode::callbackImu, this, std::placeholders::_1),
+      "imu", reliable_qos, std::bind(&dlio::OdomNode::callbackImu, this, std::placeholders::_1),
       imu_sub_opt);
 
   this->odom_pub = this->create_publisher<nav_msgs::msg::Odometry>("odom", 1);

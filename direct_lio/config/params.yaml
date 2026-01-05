@@ -13,12 +13,12 @@
 /**:
   ros__parameters:
     version: 1.1.1
-    adaptive: true    
-    use_sim_time: true
+    adaptive: true
+    use_sim_time: false
     
     frames/odom: odom
     frames/baselink: base_link
-    frames/lidar: robosense_top
+    frames/lidar: rslidar
     frames/imu: imu_link    
 
     pointcloud/deskew: true

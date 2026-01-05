@@ -25,7 +25,7 @@ struct NodeConfig
     std::string cloud_topic = "/fastlio2/body_cloud";
     std::string odom_topic = "/fastlio2/lio_odom";
     std::string map_frame = "map";
-    std::string local_frame = "lidar";
+    std::string local_frame = "rslidar";
     double update_hz = 1.0;
 };
 
@@ -70,6 +70,7 @@ public:
         m_reloc_check_srv = this->create_service<interface::srv::IsValid>("relocalize_check", std::bind(&LocalizerNode::relocCheckCB, this, std::placeholders::_1, std::placeholders::_2));
 
         m_map_cloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("map_cloud", 10);
+        m_pose_pub = this->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 10);
 
         m_timer = this->create_wall_timer(10ms, std::bind(&LocalizerNode::timerCB, this));
     }
@@ -161,6 +162,7 @@ public:
         }
         sendBroadCastTF(current_time);
         publishMapCloud(current_time);
+        publishPose(current_time, current_local_r, current_local_t);
     }
     void syncCB(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &cloud_msg, const nav_msgs::msg::Odometry::ConstSharedPtr &odom_msg)
     {
@@ -267,6 +269,29 @@ public:
         m_map_cloud_pub->publish(map_cloud_msg);
     }
 
+    void publishPose(builtin_interfaces::msg::Time &time, const M3D &local_r, const V3D &local_t)
+    {
+        // Compute robot pose in map frame: map_T_body = map_T_odom * odom_T_body
+        M3D map_body_r = m_state.last_offset_r * local_r;
+        V3D map_body_t = m_state.last_offset_r * local_t + m_state.last_offset_t;
+
+        geometry_msgs::msg::PoseStamped pose_msg;
+        pose_msg.header.frame_id = m_config.map_frame;
+        pose_msg.header.stamp = time;
+
+        pose_msg.pose.position.x = map_body_t.x();
+        pose_msg.pose.position.y = map_body_t.y();
+        pose_msg.pose.position.z = map_body_t.z();
+
+        Eigen::Quaterniond q(map_body_r);
+        pose_msg.pose.orientation.x = q.x();
+        pose_msg.pose.orientation.y = q.y();
+        pose_msg.pose.orientation.z = q.z();
+        pose_msg.pose.orientation.w = q.w();
+
+        m_pose_pub->publish(pose_msg);
+    }
+
 private:
     NodeConfig m_config;
     NodeState m_state;
@@ -281,6 +306,7 @@ private:
     rclcpp::Service<interface::srv::Relocalize>::SharedPtr m_reloc_srv;
     rclcpp::Service<interface::srv::IsValid>::SharedPtr m_reloc_check_srv;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_map_cloud_pub;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr m_pose_pub;
 };
 int main(int argc, char **argv)
 {

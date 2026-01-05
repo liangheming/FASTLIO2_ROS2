@@ -1,0 +1,71 @@
+###########################################################
+#                                                         #
+# Copyright (c)                                           #
+#                                                         #
+# The Verifiable & Control-Theoretic Robotics (VECTR) Lab #
+# University of California, Los Angeles                   #
+#                                                         #
+# Authors: Kenny J. Chen, Ryan Nemiroff, Brett T. Lopez   #
+# Contact: {kennyjchen, ryguyn, btlopez}@ucla.edu         #
+#                                                         #
+###########################################################
+
+/**:
+  ros__parameters:
+    version: 1.1.1
+    adaptive: true    
+    use_sim_time: true
+    
+    frames/odom: odom
+    frames/baselink: base_link
+    frames/lidar: robosense_top
+    frames/imu: imu_link    
+
+    pointcloud/deskew: true
+    pointcloud/voxelize: true
+
+    map/waitUntilMove: true
+    map/dense/filtered: false
+    map/sparse/leafSize: 0.1
+    map/sparse/publish: true
+
+    odom/gravity: 9.80665
+    odom/computeTimeOffset: true
+
+    # === IMU 校准 ===
+    odom/imu/approximateGravity: true
+    odom/imu/calibration/gyro: true
+    odom/imu/calibration/accel: true
+    odom/imu/calibration/time: 5.0      # ⬆️ 优化
+    odom/imu/bufferSize: 8000           # ⬆️ 优化
+
+    # === 点云预处理 ===
+    odom/preprocessing/cropBoxFilter/size: 0.8   # ⬇️ 优化
+    odom/preprocessing/voxelFilter/res: 0.10     # ⬇️ 优化（关键！）
+
+    # === 关键帧策略 ===
+    odom/keyframe/threshD: 0.5    # ⬇️ 优化（关键！）
+    odom/keyframe/threshR: 15.0   # ⬇️ 优化
+
+    # === 子图参数 ===
+    odom/submap/keyframe/knn: 15  # ⬆️ 优化
+    odom/submap/keyframe/kcv: 15  # ⬆️ 优化
+    odom/submap/keyframe/kcc: 15  # ⬆️ 优化  
+
+    # === GICP 配准 ===
+    odom/gicp/minNumPoints: 100                  # ⬆️ 优化
+    odom/gicp/kCorrespondences: 20               # ⬆️ 优化
+    odom/gicp/maxCorrespondenceDistance: 0.3     # ⬇️ 优化（关键！）
+    odom/gicp/maxIterations: 50                  # ⬆️ 优化
+    odom/gicp/transformationEpsilon: 0.001       # ⬇️ 优化（关键！）
+    odom/gicp/rotationEpsilon: 0.001             # ⬇️ 优化
+    odom/gicp/initLambdaFactor: 1e-9
+
+    # === 几何观测器增益 ===
+    odom/geo/Kp: 2.5      # ⬇️ 优化
+    odom/geo/Kv: 6.0      # ⬇️ 优化
+    odom/geo/Kq: 3.0      # ⬇️ 优化
+    odom/geo/Kab: 3.0     # ⬆️ 优化
+    odom/geo/Kgb: 1.5     # ⬆️ 优化
+    odom/geo/abias_max: 2.0   # ⬇️ 优化
+    odom/geo/gbias_max: 0.3   # ⬇️ 优化

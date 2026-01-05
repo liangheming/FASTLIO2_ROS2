@@ -36,17 +36,11 @@ find_package(ndt_omp REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-
-# find_package(g2o REQUIRED)
-# find_package(glog REQUIRED)
-# find_package(yaml-cpp REQUIRED)
+find_package(glog REQUIRED)
 
 # PyTorch dependency for TurboReg
 set(CMAKE_PREFIX_PATH "/usr/local;${CMAKE_PREFIX_PATH}")
 #find_package(Torch REQUIRED)
-
-# Include third-party dependencies
-include(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/3rdparty/cmake/thirdparty.cmake)
 
 if(OpenMP_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")

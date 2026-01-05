@@ -24,7 +24,8 @@ public:
     ICPLocalizer(const ICPConfig &config);
     
     bool loadMap(const std::string &path);
-    
+    void setMap(const CloudType::Ptr &cloud);
+
     void setInput(const CloudType::Ptr &cloud);
 
     bool align(M4F &guess);

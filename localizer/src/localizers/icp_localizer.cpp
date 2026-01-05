@@ -40,6 +40,32 @@ bool ICPLocalizer::loadMap(const std::string &path)
     }
     return true;
 }
+
+void ICPLocalizer::setMap(const CloudType::Ptr &cloud)
+{
+    if (m_config.refine_map_resolution > 0)
+    {
+        m_voxel_filter.setLeafSize(m_config.refine_map_resolution, m_config.refine_map_resolution, m_config.refine_map_resolution);
+        m_voxel_filter.setInputCloud(cloud);
+        m_voxel_filter.filter(*m_refine_tgt);
+    }
+    else
+    {
+        pcl::copyPointCloud(*cloud, *m_refine_tgt);
+    }
+
+    if (m_config.rough_map_resolution > 0)
+    {
+        m_voxel_filter.setLeafSize(m_config.rough_map_resolution, m_config.rough_map_resolution, m_config.rough_map_resolution);
+        m_voxel_filter.setInputCloud(cloud);
+        m_voxel_filter.filter(*m_rough_tgt);
+    }
+    else
+    {
+        pcl::copyPointCloud(*cloud, *m_rough_tgt);
+    }
+}
+
 void ICPLocalizer::setInput(const CloudType::Ptr &cloud)
 {
     if (m_config.refine_scan_resolution > 0)

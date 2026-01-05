@@ -14,13 +14,15 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-class GlobalmapServer : public rclcpp::Node {
+class GlobalmapServer : public rclcpp::Node
+{
 public:
   using PointT = pcl::PointXYZI;
 
   explicit GlobalmapServer(
       const rclcpp::NodeOptions &options = rclcpp::NodeOptions())
-      : Node("globalmap_server", options) {
+      : Node("globalmap_server", options)
+  {
     // declare parameters with defaults
     this->declare_parameter<std::string>("globalmap_pcd", "");
     this->declare_parameter<double>("downsample_resolution", 0.1);
@@ -61,11 +63,15 @@ public:
                   std::placeholders::_1));
 
     // If a map was provided via parameter, try loading it now
-    if (!globalmap_pcd_.empty()) {
-      if (!load_globalmap(globalmap_pcd_)) {
+    if (!globalmap_pcd_.empty())
+    {
+      if (!load_globalmap(globalmap_pcd_))
+      {
         RCLCPP_WARN(this->get_logger(), "Failed to load initial global map: %s",
                     globalmap_pcd_.c_str());
-      } else {
+      }
+      else
+      {
         // publish once (latched)
         publish_globalmap();
       }
@@ -82,10 +88,12 @@ public:
   ~GlobalmapServer() override = default;
 
 private:
-  bool load_globalmap(const std::string &pcd_path) {
+  bool load_globalmap(const std::string &pcd_path)
+  {
     pcl::PointCloud<PointT>::Ptr cloud(new pcl::PointCloud<PointT>());
 
-    if (pcl::io::loadPCDFile(pcd_path, *cloud) == -1) {
+    if (pcl::io::loadPCDFile(pcd_path, *cloud) == -1)
+    {
       RCLCPP_ERROR(this->get_logger(), "Failed to load globalmap PCD file: %s",
                    pcd_path.c_str());
       return false;
@@ -94,12 +102,15 @@ private:
     cloud->header.frame_id = frame_id_;
 
     // Optionally apply UTM offset if a .utm file exists and the param is set
-    if (convert_utm_to_local_) {
+    if (convert_utm_to_local_)
+    {
       std::ifstream utm_file(pcd_path + ".utm");
-      if (utm_file.is_open()) {
+      if (utm_file.is_open())
+      {
         double utm_easting = 0.0, utm_northing = 0.0, altitude = 0.0;
         utm_file >> utm_easting >> utm_northing >> altitude;
-        for (auto &pt : cloud->points) {
+        for (auto &pt : cloud->points)
+        {
           pt.x -= static_cast<float>(utm_easting);
           pt.y -= static_cast<float>(utm_northing);
           pt.z -= static_cast<float>(altitude);
@@ -111,7 +122,8 @@ private:
     }
 
     // Downsample if requested
-    if (downsample_resolution_ > 0.0) {
+    if (downsample_resolution_ > 0.0)
+    {
       pcl::PointCloud<PointT>::Ptr filtered(new pcl::PointCloud<PointT>());
       pcl::VoxelGrid<PointT> voxelgrid;
       voxelgrid.setLeafSize(downsample_resolution_, downsample_resolution_,
@@ -132,9 +144,11 @@ private:
     return true;
   }
 
-  void publish_globalmap() {
+  void publish_globalmap()
+  {
     std::lock_guard<std::mutex> lk(globalmap_mutex_);
-    if (!globalmap_) {
+    if (!globalmap_)
+    {
       RCLCPP_WARN(this->get_logger(), "No global map to publish");
       return;
     }
@@ -145,21 +159,24 @@ private:
     msg.header.stamp = this->now();
 
     globalmap_pub_->publish(msg);
-    RCLCPP_INFO(this->get_logger(), "Published global map (points=%zu)",
-                globalmap_->size());
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 100000, "Published global map (points=%zu)",
+                         globalmap_->size());
   }
 
-  void publish_once_cb() {
+  void publish_once_cb()
+  {
     // kept for backward-compatibility; now we publish repeatedly elsewhere
     publish_globalmap();
   }
 
-  void map_update_callback(const std_msgs::msg::String::SharedPtr msg) {
+  void map_update_callback(const std_msgs::msg::String::SharedPtr msg)
+  {
     if (!msg)
       return;
     RCLCPP_INFO(this->get_logger(), "Received map update request: %s",
                 msg->data.c_str());
-    if (load_globalmap(msg->data)) {
+    if (load_globalmap(msg->data))
+    {
       publish_globalmap();
     }
   }
@@ -182,7 +199,8 @@ private:
   std::mutex globalmap_mutex_;
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   rclcpp::init(argc, argv);
   auto options = rclcpp::NodeOptions();
 

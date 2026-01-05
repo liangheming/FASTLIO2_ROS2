@@ -11,6 +11,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include "localizers/commons.h"
 #include "localizers/icp_localizer.h"
@@ -72,6 +73,16 @@ public:
         m_map_cloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("map_cloud", 10);
         m_pose_pub = this->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 10);
 
+        // Subscribe to /initialpose from RViz
+        m_initialpose_sub = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/initialpose", 10,
+            std::bind(&LocalizerNode::initialposeCB, this, std::placeholders::_1));
+
+        // Subscribe to /globalmap for map loading
+        m_globalmap_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>(
+            "/globalmap", rclcpp::QoS(1).transient_local(),
+            std::bind(&LocalizerNode::globalmapCB, this, std::placeholders::_1));
+
         m_timer = this->create_wall_timer(10ms, std::bind(&LocalizerNode::timerCB, this));
     }
 
@@ -104,11 +115,14 @@ public:
         m_localizer_config.refine_max_iteration = config["refine_max_iteration"].as<int>();
         m_localizer_config.refine_score_thresh = config["refine_score_thresh"].as<double>();
     }
+
     void timerCB()
     {
         if (!m_state.message_received)
+        {
+            RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Have not received fastlio2 odometry data, start fast-lio2 first.");
             return;
-
+        }
         rclcpp::Duration diff = rclcpp::Clock().now() - m_state.last_send_tf_time;
 
         bool update_tf = diff.seconds() > (1.0 / m_config.update_hz) && m_state.message_received;
@@ -126,10 +140,12 @@ public:
         {
             std::lock_guard<std::mutex>(m_state.service_mutex);
             initial_guess = m_state.initial_guess;
+            RCLCPP_INFO(get_logger(), "init with rviz initial pose.");
             // m_state.service_received = false;
         }
         else
         {
+            RCLCPP_INFO(get_logger(), "estimate with fastlio2 odom.");
             std::lock_guard<std::mutex>(m_state.message_mutex);
             initial_guess.block<3, 3>(0, 0) = (m_state.last_offset_r * m_state.last_r).cast<float>();
             initial_guess.block<3, 1>(0, 3) = (m_state.last_offset_r * m_state.last_t + m_state.last_offset_t).cast<float>();
@@ -164,6 +180,7 @@ public:
         publishMapCloud(current_time);
         publishPose(current_time, current_local_r, current_local_t);
     }
+
     void syncCB(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &cloud_msg, const nav_msgs::msg::Odometry::ConstSharedPtr &odom_msg)
     {
 
@@ -207,7 +224,6 @@ public:
 
     void relocCB(const std::shared_ptr<interface::srv::Relocalize::Request> request, std::shared_ptr<interface::srv::Relocalize::Response> response)
     {
-        std::string pcd_path = request->pcd_path;
         float x = request->x;
         float y = request->y;
         float z = request->z;
@@ -215,23 +231,19 @@ public:
         float roll = request->roll;
         float pitch = request->pitch;
 
-        if (!std::filesystem::exists(pcd_path))
+        // 检查地图是否已加载
+        if (!m_map_loaded)
         {
             response->success = false;
-            response->message = "pcd file not found";
+            response->message = "no map loaded, waiting for /globalmap";
             return;
         }
+
+        RCLCPP_INFO(this->get_logger(), "Relocalize request: (%.2f, %.2f, %.2f), yaw=%.2f", x, y, z, yaw);
 
         Eigen::AngleAxisd yaw_angle = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
         Eigen::AngleAxisd roll_angle = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
         Eigen::AngleAxisd pitch_angle = Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY());
-        bool load_flag = m_localizer->loadMap(pcd_path);
-        if (!load_flag)
-        {
-            response->success = false;
-            response->message = "load map failed";
-            return;
-        }
         {
             std::lock_guard<std::mutex>(m_state.message_mutex);
             m_state.initial_guess.setIdentity();
@@ -255,6 +267,52 @@ public:
             response->valid = m_state.localize_success;
         return;
     }
+
+    void globalmapCB(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+    {
+        CloudType::Ptr map_cloud = std::make_shared<CloudType>();
+        pcl::fromROSMsg(*msg, *map_cloud);
+        if (map_cloud->empty())
+        {
+            RCLCPP_WARN(this->get_logger(), "Global map is empty!");
+            return;
+        }
+        m_localizer->setMap(map_cloud);
+        m_map_loaded = true;
+        RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 100000, "Global map loaded successfully, %zu points", map_cloud->size());
+    }
+
+    void initialposeCB(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
+    {
+        if (!m_map_loaded)
+        {
+            RCLCPP_WARN(this->get_logger(), "Cannot set initial pose: global map not loaded yet!");
+            return;
+        }
+
+        Eigen::Quaterniond q(msg->pose.pose.orientation.w,
+                             msg->pose.pose.orientation.x,
+                             msg->pose.pose.orientation.y,
+                             msg->pose.pose.orientation.z);
+
+        {
+            std::lock_guard<std::mutex> lock(m_state.service_mutex);
+            m_state.initial_guess.setIdentity();
+            m_state.initial_guess.block<3, 3>(0, 0) = q.toRotationMatrix().cast<float>();
+            m_state.initial_guess(0, 3) = static_cast<float>(msg->pose.pose.position.x);
+            m_state.initial_guess(1, 3) = static_cast<float>(msg->pose.pose.position.y);
+            m_state.initial_guess(2, 3) = static_cast<float>(msg->pose.pose.position.z);
+            m_state.service_received = true;
+            m_state.localize_success = false;
+        }
+
+        RCLCPP_INFO(this->get_logger(), "Received initial pose: (%.2f, %.2f, %.2f)",
+                    msg->pose.pose.position.x,
+                    msg->pose.pose.position.y,
+                    msg->pose.pose.position.z);
+        RCLCPP_INFO(this->get_logger(), "Initial pose set, waiting for localization...");
+    }
+
     void publishMapCloud(builtin_interfaces::msg::Time &time)
     {
         if (m_map_cloud_pub->get_subscription_count() < 1)
@@ -295,6 +353,7 @@ public:
 private:
     NodeConfig m_config;
     NodeState m_state;
+    bool m_map_loaded = false;
 
     ICPConfig m_localizer_config;
     std::shared_ptr<ICPLocalizer> m_localizer;
@@ -307,6 +366,8 @@ private:
     rclcpp::Service<interface::srv::IsValid>::SharedPtr m_reloc_check_srv;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_map_cloud_pub;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr m_pose_pub;
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr m_initialpose_sub;
+    rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr m_globalmap_sub;
 };
 int main(int argc, char **argv)
 {

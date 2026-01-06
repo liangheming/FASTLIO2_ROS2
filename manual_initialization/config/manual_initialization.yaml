@@ -12,7 +12,7 @@ manual_initialization_node:
     registration_method: "cascade"
 
     # 通用参数
-    score_threshold: 2.0         # 配准成功阈值（fitness score 低于此值认为成功）
+    score_threshold: 1.0         # 配准成功阈值（fitness score 低于此值认为成功）
     num_threads: 4               # 并行线程数
 
     # ===========================================

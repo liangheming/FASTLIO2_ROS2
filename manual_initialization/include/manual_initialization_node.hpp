@@ -83,6 +83,16 @@ private:
     declare_parameter("max_refinement_dist", 2.5);
     declare_parameter("max_refinement_yaw_deg", 90.0);
     declare_parameter("early_stop_score", 0.1);
+    declare_parameter("score_threshold", 0.15);
+
+    // 点云滤波参数
+    declare_parameter("voxel_leaf_size", 0.15);
+    declare_parameter("scan_max_range", 40.0);
+    declare_parameter("scan_min_range", 1.0);
+    declare_parameter("min_scan_points", 500);
+
+    // 地图处理参数
+    declare_parameter("map_voxel_size", 0.5);
 
     config_.search_radius = get_parameter("search_radius").as_double();
     config_.yaw_search_range = get_parameter("yaw_search_range_deg").as_double() * M_PI / 180.0;
@@ -93,6 +103,13 @@ private:
     config_.max_refinement_dist = get_parameter("max_refinement_dist").as_double();
     config_.max_refinement_yaw = get_parameter("max_refinement_yaw_deg").as_double() * M_PI / 180.0;
     config_.early_stop_score = get_parameter("early_stop_score").as_double();
+    config_.score_threshold = get_parameter("score_threshold").as_double();
+
+    voxel_leaf_size_ = get_parameter("voxel_leaf_size").as_double();
+    scan_max_range_ = get_parameter("scan_max_range").as_double();
+    scan_min_range_ = get_parameter("scan_min_range").as_double();
+    min_scan_points_ = get_parameter("min_scan_points").as_int();
+    map_voxel_size_ = get_parameter("map_voxel_size").as_double();
 
     global_frame_id_ = get_parameter("global_frame_id").as_string();
 
@@ -114,19 +131,24 @@ private:
     RCLCPP_INFO(get_logger(), "NDT resolution: %.2f m", config_.ndt_resolution);
     RCLCPP_INFO(get_logger(), "NDT max iterations: %d", config_.ndt_max_iterations);
     RCLCPP_INFO(get_logger(), "Num threads: %d", config_.num_threads);
+    RCLCPP_INFO(get_logger(), "Score threshold: %.3f", config_.score_threshold);
     RCLCPP_INFO(get_logger(), "Global frame: %s", global_frame_id_.c_str());
+    RCLCPP_INFO(get_logger(), "--- Point Cloud Filtering ---");
+    RCLCPP_INFO(get_logger(), "Voxel leaf size: %.2f m", voxel_leaf_size_);
+    RCLCPP_INFO(get_logger(), "Scan range: [%.1f, %.1f] m", scan_min_range_, scan_max_range_);
+    RCLCPP_INFO(get_logger(), "Min scan points: %d", min_scan_points_);
+    RCLCPP_INFO(get_logger(), "--- Map Processing ---");
+    RCLCPP_INFO(get_logger(), "Map voxel size: %.2f m", map_voxel_size_);
     RCLCPP_INFO(get_logger(), "===================================");
   }
 
   void initializeSubscribers() {
-    initialpose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-        "initialpose", rclcpp::QoS(1), std::bind(&ManualInitializationNode::initialposeCallback, this, std::placeholders::_1));
+    initialpose_sub_ =
+        create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("initialpose", rclcpp::QoS(1), std::bind(&ManualInitializationNode::initialposeCallback, this, std::placeholders::_1));
 
-    cloud_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>("cloud", rclcpp::SensorDataQoS(),
-                                                                     std::bind(&ManualInitializationNode::cloudCallback, this, std::placeholders::_1));
+    cloud_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>("cloud", rclcpp::SensorDataQoS(), std::bind(&ManualInitializationNode::cloudCallback, this, std::placeholders::_1));
 
-    map_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>("map", rclcpp::QoS(1).transient_local(),
-                                                                   std::bind(&ManualInitializationNode::mapCallback, this, std::placeholders::_1));
+    map_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>("map", rclcpp::QoS(1).transient_local(), std::bind(&ManualInitializationNode::mapCallback, this, std::placeholders::_1));
   }
 
   void initializePublishers() {
@@ -159,9 +181,6 @@ private:
   void cloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
 
   void initialposeCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
-    RCLCPP_INFO(get_logger(), "========================================");
-    RCLCPP_INFO(get_logger(), "Received initial pose from RViz");
-
     if (!map_loaded_) {
       RCLCPP_ERROR(get_logger(), "Map not loaded yet!");
       return;
@@ -186,6 +205,15 @@ private:
   }
 
   // ==================== 核心处理方法（实现在 cpp 文件中）====================
+
+  /**
+   * @brief 将点云从 lidar frame 转换到 base_link frame 并滤波
+   *
+   * @param input 输入点云消息（lidar frame）
+   * @param output 输出点云（base_link frame）
+   * @return true 转换成功
+   */
+  bool transformAndFilterPC(const sensor_msgs::msg::PointCloud2::SharedPtr &input, pcl::PointCloud<pcl::PointXYZI>::Ptr &output);
 
   OptimizationResult performOptimization(const sensor_msgs::msg::PointCloud2::SharedPtr &cloud_msg);
 
@@ -307,6 +335,15 @@ private:
 
   // 参数
   std::string global_frame_id_;
+
+  // 点云滤波参数
+  double voxel_leaf_size_ = 0.15;
+  double scan_max_range_ = 40.0;
+  double scan_min_range_ = 1.0;
+  int min_scan_points_ = 500;
+
+  // 地图处理参数
+  double map_voxel_size_ = 0.5;
 
   // TF
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;

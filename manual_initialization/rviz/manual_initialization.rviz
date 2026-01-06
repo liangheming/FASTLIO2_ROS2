@@ -6,7 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-      Splitter Ratio: 0.5415162444114685
+        - /AlignedCloud1
+      Splitter Ratio: 0.671480119228363
     Tree Height: 902
   - Class: rviz_common/Selection
     Name: Selection
@@ -163,14 +164,14 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 249
+      Max Intensity: 212
       Min Color: 0; 0; 0
-      Min Intensity: 1
+      Min Intensity: 2
       Name: AlignedCloud
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.009999999776482582
+      Size (m): 0.10000000149011612
       Style: Flat Squares
       Topic:
         Depth: 10
@@ -292,7 +293,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 77.90229797363281
+      Distance: 36.17814636230469
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -307,10 +308,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5197962522506714
+      Pitch: 0.7997970581054688
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.1422119140625
+      Yaw: 4.147220134735107
     Saved: ~
 Window Geometry:
   Displays:

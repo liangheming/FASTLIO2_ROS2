@@ -45,6 +45,9 @@ struct ManualInitializerConfig {
 
   // 早停参数
   double early_stop_score = 0.1; // 提前退出阈值（0=禁用，>0时得分低于此值则提前退出）
+
+  // 配准成功阈值
+  double score_threshold = 0.15; // fitness score 阈值，低于此值认为配准成功
 };
 
 /**

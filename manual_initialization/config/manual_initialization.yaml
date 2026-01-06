@@ -5,10 +5,20 @@ manual_initialization_node:
     yaw_search_range_deg: 90.0   # 航向角搜索范围（度，±范围）
 
     # NDT 配准参数
-    use_multiscale: true         # 是否使用多尺度配准（推荐开启）
-    ndt_resolution: 1.5          # 单尺度模式的分辨率（use_multiscale=false 时使用）
-    ndt_max_iterations: 20       # 单尺度模式的迭代次数
+    use_multiscale: false        # 是否使用多尺度配准（推荐开启）
+    ndt_resolution: 1.0          # NDT 体素分辨率（米）
+    ndt_max_iterations: 30       # 最大迭代次数
     num_threads: 4               # 并行线程数
+    score_threshold: 0.15        # 配准成功阈值（fitness score 低于此值认为成功）
+
+    # 点云滤波参数
+    voxel_leaf_size: 0.15        # 扫描点云体素大小（米）
+    scan_max_range: 40.0         # 扫描点云最大距离（米）
+    scan_min_range: 1.0          # 扫描点云最小距离（米）
+    min_scan_points: 500         # 最小有效点数
+
+    # 地图处理参数
+    map_voxel_size: 0.5          # 局部地图体素大小（米）
 
     # 验证参数
     max_refinement_dist: 2.5     # 最大位置改进（米）

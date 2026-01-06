@@ -419,15 +419,23 @@ OptimizationResult ManualInitializer::simpleOptimize(const pcl::PointCloud<pcl::
     result.aligned_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
     pcl::transformPointCloud(*source_cloud, *result.aligned_cloud, result.transform);
 
-    result.success = true;
-    result.message = "Simple optimization successful";
-
     std::cout << "[ManualInitializer] Simple optimization completed:" << std::endl;
     std::cout << "  Converged: YES" << std::endl;
-    std::cout << "  Fitness score: " << result.fitness_score << std::endl;
+    std::cout << "  Fitness score: " << result.fitness_score << " (threshold: " << config_.score_threshold << ")" << std::endl;
     std::cout << "  Final pose: [" << result.transform(0, 3) << ", " << result.transform(1, 3) << ", " << result.transform(2, 3) << "]" << std::endl;
     std::cout << "  Position improvement: " << result.position_improvement << " m" << std::endl;
     std::cout << "  Yaw improvement: " << result.yaw_improvement * 180.0 / M_PI << " deg" << std::endl;
+
+    // 检查 fitness score 是否满足阈值
+    if (result.fitness_score < config_.score_threshold) {
+      result.success = true;
+      result.message = "Simple optimization successful";
+      std::cout << "  Result: SUCCESS (score < threshold)" << std::endl;
+    } else {
+      result.success = false;
+      result.message = "Fitness score too high: " + std::to_string(result.fitness_score) + " >= " + std::to_string(config_.score_threshold);
+      std::cout << "  Result: FAILED (score >= threshold)" << std::endl;
+    }
   } else {
     result.converged_poses = 0;
     result.message = "NDT failed to converge";

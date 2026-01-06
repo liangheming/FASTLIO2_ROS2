@@ -1,13 +1,13 @@
 Panels:
   - Class: rviz_common/Displays
-    Help Height: 78
+    Help Height: 138
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /Global Options1
         - /Status1
       Splitter Ratio: 0.5415162444114685
-    Tree Height: 1115
+    Tree Height: 902
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -92,7 +92,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 255
@@ -102,7 +102,7 @@ Visualization Manager:
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.009999999776482582
+      Size (m): 0.10000000149011612
       Style: Flat Squares
       Topic:
         Depth: 10
@@ -113,7 +113,7 @@ Visualization Manager:
         Value: /manual_init/target_cloud
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -129,7 +129,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 198.39999389648438
+      Max Intensity: 249
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: SourceCloudInMap
@@ -163,7 +163,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 198.39999389648438
+      Max Intensity: 249
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: AlignedCloud
@@ -292,33 +292,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 192.82470703125
+      Distance: 77.90229797363281
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 8.131403923034668
-        Y: -20.503204345703125
-        Z: 1.0344876050949097
+        X: 8.657870292663574
+        Y: 4.998232841491699
+        Z: 1.0332446098327637
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5447965860366821
+      Pitch: 1.5197962522506714
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.187208890914917
+      Yaw: 3.1422119140625
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1736
+  Height: 1672
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000002000000000000022c0000066efc0200000004fb000000100044006900730070006c006100790073010000003d000004e6000000c900fffffffb0000001200530065006c0065006300740069006f006e00000002b10000012e0000005c00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000529000001820000005c00fffffffb0000000800540069006d006500000004f3000000500000003900ffffff00000001000001cb0000066efc0200000001fb0000000a00560069006500770073010000003d0000066e000000a400ffffff000006f70000066e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000002000000000000022c000005ecfc0200000004fb000000100044006900730070006c006100790073010000006e0000047e0000018200fffffffb0000001200530065006c0065006300740069006f006e00000002b10000012e000000b000fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007301000004f800000162000000b000fffffffb0000000800540069006d006500000004f3000000500000005a00ffffff00000001000001cb000005ecfc0200000001fb0000000a00560069006500770073010000006e000005ec0000013200ffffff000006a5000005ec00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -327,6 +327,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 2810
-  X: 70
-  Y: 27
+  Width: 2740
+  X: 140
+  Y: 54

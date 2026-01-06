@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /DLIO_Path1
       Splitter Ratio: 0.4646739065647125
     Tree Height: 1166
   - Class: rviz_common/Selection
@@ -122,44 +123,25 @@ Visualization Manager:
       Radius: 0.10000000149011612
       Reference Frame: map
       Value: true
-    - Angle Tolerance: 0.10000000149011612
-      Class: rviz_default_plugins/Odometry
-      Covariance:
-        Orientation:
-          Alpha: 0.5
-          Color: 255; 255; 127
-          Color Style: Unique
-          Frame: Local
-          Offset: 1
-          Scale: 1
-          Value: true
-        Position:
-          Alpha: 0.30000001192092896
-          Color: 204; 51; 204
-          Scale: 1
-          Value: true
-        Value: true
+    - Alpha: 1
+      Axes Length: 0.5
+      Axes Radius: 0.20000000298023224
+      Class: rviz_default_plugins/Pose
+      Color: 255; 25; 0
       Enabled: true
-      Keep: 100
-      Name: Fastlio_Odometry
-      Position Tolerance: 0.10000000149011612
-      Shape:
-        Alpha: 1
-        Axes Length: 1
-        Axes Radius: 0.10000000149011612
-        Color: 255; 25; 0
-        Head Length: 0.30000001192092896
-        Head Radius: 0.10000000149011612
-        Shaft Length: 1
-        Shaft Radius: 0.05000000074505806
-        Value: Arrow
+      Head Length: 0.10000000149011612
+      Head Radius: 0.10000000149011612
+      Name: DLIO_Pose
+      Shaft Length: 1
+      Shaft Radius: 0.10000000149011612
+      Shape: Axes
       Topic:
         Depth: 5
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /fastlio2/lio_odom
+        Value: /direct_odometry/pose
       Value: true
     - Alpha: 1
       Buffer Length: 1
@@ -170,15 +152,15 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Lines
-      Line Width: 0.029999999329447746
-      Name: Fastlio_Path
+      Line Width: 10
+      Name: DLIO_Path
       Offset:
         X: 0
         Y: 0
         Z: 0
       Pose Color: 255; 85; 255
       Pose Style: None
-      Radius: 0.029999999329447746
+      Radius: 0.009999999776482582
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
       Topic:
@@ -187,7 +169,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /fastlio2/lio_path
+        Value: /direct_odometry/path
       Value: true
   Enabled: true
   Global Options:
@@ -235,16 +217,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 90.2557601928711
+      Distance: 5.797455310821533
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 21.900808334350586
-        Y: -2.290855646133423
-        Z: 1.6148653030395508
+        X: 1.712003231048584
+        Y: 0.36616215109825134
+        Z: 1.5946370363235474
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
@@ -253,7 +235,7 @@ Visualization Manager:
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.155398368835449
+      Yaw: 3.2853970527648926
     Saved: ~
 Window Geometry:
   Displays:

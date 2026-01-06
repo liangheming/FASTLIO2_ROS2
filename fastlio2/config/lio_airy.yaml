@@ -1,0 +1,34 @@
+imu_topic: /rslidar_imu_data
+lidar_topic: /rslidar_points
+body_frame: base_link
+world_frame: rslidar
+imu_frame: imu_link
+lidar_frame: rslidar
+print_time_cost: false
+
+lidar_filter_num: 6
+lidar_min_range: 0.5
+lidar_max_range: 30.0
+scan_resolution: 0.15
+map_resolution: 0.3
+
+cube_len: 300
+det_range: 60
+move_thresh: 1.5
+
+na: 0.01
+ng: 0.01
+nba: 0.0001
+nbg: 0.0001
+
+imu_init_num: 20
+near_search_num: 5
+ieskf_max_iter: 5
+
+gravity_align: true
+esti_il: false
+
+r_il: [0.007515, -0.999930, 0.009135, -0.999959, -0.007560, -0.004969, 0.005038, -0.009097, -0.999946]
+t_il: [0.00425, 0.00418, -0.00446]
+
+lidar_cov_inv: 1000.0

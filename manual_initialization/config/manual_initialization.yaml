@@ -1,0 +1,66 @@
+manual_initialization_node:
+  ros__parameters:
+    # ===========================================
+    # 配准方法选择
+    # ===========================================
+    # 可选: "ndt", "gicp", "small_gicp", "vgicp", "cascade"
+    # - ndt: NDT配准，收敛快，鲁棒性好
+    # - gicp: PCL GICP，精度高
+    # - small_gicp: Small GICP，精度高且速度快
+    # - vgicp: Voxelized GICP，速度最快
+    # - cascade: 两阶段级联配准（NDT粗配准 + GICP精配准），精度和鲁棒性最好
+    registration_method: "cascade"
+
+    # 通用参数
+    score_threshold: 1.0         # 配准成功阈值（fitness score 低于此值认为成功）
+    num_threads: 4               # 并行线程数
+
+    # ===========================================
+    # NDT 配准参数 (registration_method: "ndt")
+    # ===========================================
+    ndt_resolution: 1.0          # NDT 体素分辨率（米）
+    ndt_max_iterations: 30       # 最大迭代次数
+
+    # ===========================================
+    # GICP 配准参数 (registration_method: "gicp")
+    # ===========================================
+    gicp_max_iterations: 50      # GICP 最大迭代次数
+    gicp_max_correspondence_distance: 1.0  # 最大对应距离（米）
+
+    # ===========================================
+    # Small GICP / VGICP 参数
+    # (registration_method: "small_gicp" 或 "vgicp")
+    # ===========================================
+    small_gicp_max_iterations: 30
+    small_gicp_max_correspondence_distance: 1.0
+    small_gicp_voxel_resolution: 1.0   # VGICP 专用
+    small_gicp_num_neighbors: 20       # 协方差估计邻居数
+
+    # ===========================================
+    # Cascade 级联配准参数 (registration_method: "cascade")
+    # 两阶段配准：粗配准 -> 精配准
+    # ===========================================
+    cascade_coarse_method: "ndt"       # 粗配准方法: "ndt" 或 "vgicp"
+    cascade_fine_method: "small_gicp"  # 精配准方法: "gicp" 或 "small_gicp"
+    cascade_coarse_max_iterations: 30  # 粗配准迭代次数
+    cascade_fine_max_iterations: 50    # 精配准迭代次数
+    cascade_coarse_score_threshold: 3.0  # 粗配准score阈值（允许较高）
+
+    # ===========================================
+    # 点云滤波参数
+    # ===========================================
+    voxel_leaf_size: 0.15        # 扫描点云体素大小（米）
+    scan_max_range: 40.0         # 扫描点云最大距离（米）
+    scan_min_range: 1.0          # 扫描点云最小距离（米）
+    min_scan_points: 500         # 最小有效点数
+
+    # ===========================================
+    # 地图处理参数
+    # ===========================================
+    map_voxel_size: 0.5          # 局部地图体素大小（米）
+    local_map_radius: 30.0       # 局部地图提取半径（米）
+
+    # ===========================================
+    # 坐标系
+    # ===========================================
+    global_frame_id: "map"       # 全局坐标系

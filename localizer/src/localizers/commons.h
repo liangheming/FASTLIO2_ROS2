@@ -1,7 +1,7 @@
 #pragma once
 #include <Eigen/Eigen>
-#include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 using PointType = pcl::PointXYZI;
 using CloudType = pcl::PointCloud<PointType>;

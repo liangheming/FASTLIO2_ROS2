@@ -34,7 +34,9 @@ find_package(geometry_msgs REQUIRED)
 find_package(OpenMP QUIET)
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
+set(Sophus_DIR "/opt/fusion/v2.0/sophus-1.22/share/sophus/cmake")
 find_package(Sophus REQUIRED)
+include_directories(/opt/fusion/v2.0/sophus-1.22/include)
 find_package(yaml-cpp REQUIRED)
 
 

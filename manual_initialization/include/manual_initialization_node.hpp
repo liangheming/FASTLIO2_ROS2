@@ -39,9 +39,11 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
-#include "registration/gicp_registration.hpp"
-#include "registration/ndt_registration.hpp"
 #include "registration/registration_base.hpp"
+#include "registration/ndt_registration.hpp"
+#include "registration/gicp_registration.hpp"
+#include "registration/small_gicp_registration.hpp"
+#include "registration/cascade_registration.hpp"
 
 using namespace finder_localization;
 
@@ -72,18 +74,31 @@ private:
   // ==================== 初始化方法 ====================
 
   void loadParameters() {
-    // 配准方法选择
-    declare_parameter("registration_method", "gicp"); // "ndt" or "gicp"
+    // 配准方法选择: "ndt", "gicp", "small_gicp", "vgicp", "cascade"
+    declare_parameter("registration_method", "cascade");
     declare_parameter("score_threshold", 2.5);
+    declare_parameter("num_threads", 4);
 
     // NDT 参数
     declare_parameter("ndt_resolution", 1.0);
     declare_parameter("ndt_max_iterations", 30);
-    declare_parameter("num_threads", 4);
 
-    // GICP 参数
+    // GICP 参数 (PCL)
     declare_parameter("gicp_max_iterations", 50);
     declare_parameter("gicp_max_correspondence_distance", 1.0);
+
+    // Small GICP / VGICP 参数
+    declare_parameter("small_gicp_max_iterations", 30);
+    declare_parameter("small_gicp_max_correspondence_distance", 1.0);
+    declare_parameter("small_gicp_voxel_resolution", 1.0);
+    declare_parameter("small_gicp_num_neighbors", 20);
+
+    // Cascade 参数
+    declare_parameter("cascade_coarse_method", "ndt");      // "ndt" or "vgicp"
+    declare_parameter("cascade_fine_method", "small_gicp"); // "gicp" or "small_gicp"
+    declare_parameter("cascade_coarse_max_iterations", 30);
+    declare_parameter("cascade_fine_max_iterations", 50);
+    declare_parameter("cascade_coarse_score_threshold", 3.0);
 
     // 点云滤波参数
     declare_parameter("voxel_leaf_size", 0.15);
@@ -101,6 +116,7 @@ private:
     // 读取参数
     registration_method_ = get_parameter("registration_method").as_string();
     score_threshold_ = get_parameter("score_threshold").as_double();
+    int num_threads = get_parameter("num_threads").as_int();
 
     voxel_leaf_size_ = get_parameter("voxel_leaf_size").as_double();
     scan_max_range_ = get_parameter("scan_max_range").as_double();
@@ -111,16 +127,47 @@ private:
     global_frame_id_ = get_parameter("global_frame_id").as_string();
 
     // 根据方法创建配准实例
-    if (registration_method_ == "gicp" || registration_method_ == "GICP") {
+    if (registration_method_ == "cascade" || registration_method_ == "CASCADE") {
+      CascadeConfig config;
+      config.coarse_method = get_parameter("cascade_coarse_method").as_string();
+      config.fine_method = get_parameter("cascade_fine_method").as_string();
+      config.coarse_max_iterations = get_parameter("cascade_coarse_max_iterations").as_int();
+      config.fine_max_iterations = get_parameter("cascade_fine_max_iterations").as_int();
+      config.coarse_score_threshold = get_parameter("cascade_coarse_score_threshold").as_double();
+      config.num_threads = num_threads;
+      config.max_correspondence_distance = get_parameter("small_gicp_max_correspondence_distance").as_double();
+      config.ndt_resolution = get_parameter("ndt_resolution").as_double();
+      config.vgicp_voxel_resolution = get_parameter("small_gicp_voxel_resolution").as_double();
+      config.num_neighbors = get_parameter("small_gicp_num_neighbors").as_int();
+      registration_ = std::make_shared<CascadeRegistration>(config);
+    } else if (registration_method_ == "small_gicp" || registration_method_ == "SMALL_GICP") {
+      SmallGicpConfig config;
+      config.type = "GICP";
+      config.max_iterations = get_parameter("small_gicp_max_iterations").as_int();
+      config.num_threads = num_threads;
+      config.num_neighbors = get_parameter("small_gicp_num_neighbors").as_int();
+      config.max_correspondence_distance = get_parameter("small_gicp_max_correspondence_distance").as_double();
+      registration_ = std::make_shared<SmallGicpRegistration>(config);
+    } else if (registration_method_ == "vgicp" || registration_method_ == "VGICP") {
+      SmallGicpConfig config;
+      config.type = "VGICP";
+      config.max_iterations = get_parameter("small_gicp_max_iterations").as_int();
+      config.num_threads = num_threads;
+      config.num_neighbors = get_parameter("small_gicp_num_neighbors").as_int();
+      config.max_correspondence_distance = get_parameter("small_gicp_max_correspondence_distance").as_double();
+      config.voxel_resolution = get_parameter("small_gicp_voxel_resolution").as_double();
+      registration_ = std::make_shared<SmallGicpRegistration>(config);
+    } else if (registration_method_ == "gicp" || registration_method_ == "GICP") {
       GicpConfig config;
       config.max_iterations = get_parameter("gicp_max_iterations").as_int();
       config.max_correspondence_distance = get_parameter("gicp_max_correspondence_distance").as_double();
       registration_ = std::make_shared<GicpRegistration>(config);
     } else {
+      // Default to NDT
       NdtConfig config;
       config.resolution = get_parameter("ndt_resolution").as_double();
       config.max_iterations = get_parameter("ndt_max_iterations").as_int();
-      config.num_threads = get_parameter("num_threads").as_int();
+      config.num_threads = num_threads;
       registration_ = std::make_shared<NdtRegistration>(config);
     }
 

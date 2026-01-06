@@ -37,6 +37,7 @@ find_package(OpenMP REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(glog REQUIRED)
+find_package(small_gicp REQUIRED)
 
 # PyTorch dependency for TurboReg
 set(CMAKE_PREFIX_PATH "/usr/local;${CMAKE_PREFIX_PATH}")
@@ -60,8 +61,13 @@ include_directories(
 add_executable(manual_initialization_node
   manual_initialization_node.cpp
   src/registration/ndt_registration.cpp
-  src/registration/gicp_registration.cpp)
-target_link_libraries(manual_initialization_node ${pcl_LIBRARIES})
+  src/registration/gicp_registration.cpp
+  src/registration/small_gicp_registration.cpp
+  src/registration/cascade_registration.cpp)
+target_link_libraries(manual_initialization_node
+  ${pcl_LIBRARIES}
+)
+target_link_libraries(manual_initialization_node small_gicp::small_gicp)
 ament_target_dependencies(manual_initialization_node
   rclcpp
   sensor_msgs

@@ -1,0 +1,17 @@
+cloud_topic: /rslidar_points
+pose_topic: /glim_ros/pose
+map_frame: map
+local_frame: odom
+update_hz: 1.0
+
+# Rough matching parameters (coarse alignment)
+rough_scan_resolution: 0.25
+rough_map_resolution: 0.25
+rough_max_iteration: 5
+rough_score_thresh: 0.2
+
+# Refine matching parameters (fine alignment)
+refine_scan_resolution: 0.1
+refine_map_resolution: 0.1
+refine_max_iteration: 10
+refine_score_thresh: 0.1

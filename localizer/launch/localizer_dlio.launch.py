@@ -28,7 +28,7 @@ def generate_launch_description():
 
     map_pcd_arg = DeclareLaunchArgument(
         'map_pcd',
-        default_value='/home/steve/map_data/map_geoscan/B1/20251228_152049/global_map.pcd',
+        default_value='/home/steve/map_data/map_geoscan/B1/20251225_191653/global_map.pcd',
         description='Path to global map PCD file'
     )
 

@@ -105,6 +105,18 @@ public:
     m_localizer_config.refine_score_thresh = config["refine_score_thresh"].as<double>();
   }
 
+  /// @brief 定时主循环：触发配准、更新偏移并发布 TF/Pose
+  /// @details
+  /// - 由构造时创建的 wall timer 定期调用；它主要负责：
+  ///   1) 根据 `m_config.update_hz` 决定是否执行一次完整的 scan-to-map 配准（较重的操作），
+  ///   2) 在未经配准时仅广播当前的 map->local_frame TF 以减少开销，
+  ///   3) 当执行配准时：构造初始猜测（来自 `m_state.initial_guess` 或基于上次的 `last_offset` 与最新里程计），调用 `m_localizer->align`；
+  ///   4) 配准成功则更新 `m_state.last_offset`（用来校正后续里程计），并在需要时设置 `m_state.localize_success`。
+  /// - 线程/锁策略：
+  ///   * 读取/修改与消息相关的状态（`last_r/last_t/last_cloud/last_message_time`）使用 `message_mutex` 保护；
+  ///   * 读取/修改与服务相关的状态（`initial_guess/service_received/localize_success`）使用 `service_mutex` 保护；
+  /// - 发布：在每次周期结束时调用 `sendBroadCastTF`、`publishMapCloud`、`publishPose`（使用当前消息时间戳）。
+  /// @note 该函数用里程计作为先验并用 ICP 修正（几何复合式“融合”），但不进行协方差/滤波层面的统计融合。
   void timerCB() {
     if (!m_state.message_received) {
       RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Have not received fastlio2 odometry data, start fast-lio2 first.");
@@ -146,7 +158,15 @@ public:
     }
 
     bool result = m_localizer->align(initial_guess);
+
+    // Log diagnostics from ICPLocalizer (rough/refine fitness and convergence)
+    double rough_f = m_localizer->last_rough_fitness();
+    double refine_f = m_localizer->last_refine_fitness();
+    bool rough_conv = m_localizer->last_rough_converged();
+    bool refine_conv = m_localizer->last_refine_converged();
+
     if (result) {
+      RCLCPP_INFO(get_logger(), "Localization success: rough_conv=%d rough_f=%.4f refine_conv=%d refine_f=%.4f", (int)rough_conv, rough_f, (int)refine_conv, refine_f);
       M3D map_body_r = initial_guess.block<3, 3>(0, 0).cast<double>();
       V3D map_body_t = initial_guess.block<3, 1>(0, 3).cast<double>();
       m_state.last_offset_r = map_body_r * current_local_r.transpose();
@@ -156,12 +176,25 @@ public:
         m_state.localize_success = true;
         m_state.service_received = false;
       }
+    } else {
+      RCLCPP_WARN(get_logger(), "Localization failed: rough_conv=%d rough_f=%.4f refine_conv=%d refine_f=%.4f", (int)rough_conv, rough_f, (int)refine_conv, refine_f);
     }
     sendBroadCastTF(current_time);
     publishMapCloud(current_time);
     publishPose(current_time, current_local_r, current_local_t);
   }
 
+  /// @brief 同步回调：接收并处理里程计发布的消息与点云
+  /// @details
+  /// - 由 `message_filters::Synchronizer` 调用，保证接收到的 `PointCloud2` 与 `Odometry` 在时间上近似对齐；
+  /// - 在 `message_mutex` 保护下：
+  ///     * 将点云转换为 PCL 格式并保存到 `m_state.last_cloud`；
+  ///     * 从里程计中提取旋转矩阵 `last_r` 与平移 `last_t`；
+  ///     * 记录该消息的时间戳 `last_message_time`；
+  ///     * 首次接收消息时标记 `message_received=true` 并设置 `m_config.local_frame` 为里程计的 frame id。
+  /// - 这些状态被 `timerCB` 使用作初始猜测与配准输入（主循环会基于此进行 ICP 配准或仅广播 TF）。
+  /// @param cloud_msg 输入点云消息（sensor_msgs::msg::PointCloud2）
+  /// @param odom_msg 与点云同步的里程计消息（nav_msgs::msg::Odometry）
   void syncCB(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &cloud_msg, const nav_msgs::msg::Odometry::ConstSharedPtr &odom_msg) {
 
     std::lock_guard<std::mutex>(m_state.message_mutex);
@@ -194,6 +227,15 @@ public:
     m_tf_broadcaster->sendTransform(transformStamped);
   }
 
+  /// @brief 在接收到 relocalize 服务请求时触发（来自外部，例如 RViz 的 relocalize 服务）
+  /// @details
+  /// - 验证是否已加载全局地图（`/globalmap`），如果未加载则返回失败；
+  /// - 将请求中的位姿(x,y,z,yaw,roll,pitch)构造为一个 4x4 的初始位姿猜测 `m_state.initial_guess`；
+  /// - 在保护锁下（`m_state.message_mutex`）设置 `m_state.service_received=true`，通知主循环使用该初始猜测进行配准；
+  /// - 将 `m_state.localize_success` 置为 false（等待下一次配准确认成功）。
+  /// @note 当前实现使用 `message_mutex` 保护状态修改以避免与消息回调竞争（保持原有锁策略不变）。
+  /// @param request 包含 x,y,z,yaw,roll,pitch 用以构造初始位姿猜测
+  /// @param response 返回是否接受该重定位请求及附带信息
   void relocCB(const std::shared_ptr<interface::srv::Relocalize::Request> request, std::shared_ptr<interface::srv::Relocalize::Response> response) {
     float x = request->x;
     float y = request->y;
@@ -228,6 +270,12 @@ public:
     return;
   }
 
+  /// @brief 用于检查当前 relocalize 状态的服务回调（relocalize_check）
+  /// @details
+  /// - 当外部想查询是否已经完成一次有效的重定位时调用此服务；
+  /// - 如果 `request->code == 1`，强制返回 true（用于外部强制视为通过的场景）；
+  /// - 否则返回 `m_state.localize_success` 表示最近一次通过服务或 initialpose 触发的定位是否已经成功。
+  /// @note 使用 `service_mutex` 保护访问 `m_state.localize_success`，避免与在重定位过程中修改该标志的并发问题。
   void relocCheckCB(const std::shared_ptr<interface::srv::IsValid::Request> request, std::shared_ptr<interface::srv::IsValid::Response> response) {
     std::lock_guard<std::mutex>(m_state.service_mutex);
     if (request->code == 1)

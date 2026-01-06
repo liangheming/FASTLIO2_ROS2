@@ -4,6 +4,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/registration/icp.h>
+#include <limits> // for diagnostic initial values
 
 struct ICPConfig {
   double refine_scan_resolution = 0.1;
@@ -31,6 +32,12 @@ public:
   CloudType::Ptr roughMap() { return m_rough_tgt; }
   CloudType::Ptr refineMap() { return m_refine_tgt; }
 
+  // Diagnostics: expose last ICP fitness and convergence state for logging
+  double last_rough_fitness() const { return m_last_rough_fitness; }
+  double last_refine_fitness() const { return m_last_refine_fitness; }
+  bool last_rough_converged() const { return m_last_rough_converged; }
+  bool last_refine_converged() const { return m_last_refine_converged; }
+
 private:
   ICPConfig m_config;
   pcl::VoxelGrid<PointType> m_voxel_filter;
@@ -40,5 +47,12 @@ private:
   CloudType::Ptr m_rough_inp;
   CloudType::Ptr m_refine_tgt;
   CloudType::Ptr m_rough_tgt;
+
+  // Last ICP diagnostics
+  double m_last_rough_fitness = std::numeric_limits<double>::infinity();
+  double m_last_refine_fitness = std::numeric_limits<double>::infinity();
+  bool m_last_rough_converged = false;
+  bool m_last_refine_converged = false;
+
   std::string m_pcd_path;
 };

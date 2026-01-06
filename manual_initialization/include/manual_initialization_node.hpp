@@ -39,9 +39,9 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
-#include "registration/registration_base.hpp"
-#include "registration/ndt_registration.hpp"
 #include "registration/gicp_registration.hpp"
+#include "registration/ndt_registration.hpp"
+#include "registration/registration_base.hpp"
 
 using namespace finder_localization;
 
@@ -73,7 +73,7 @@ private:
 
   void loadParameters() {
     // 配准方法选择
-    declare_parameter("registration_method", "gicp");  // "ndt" or "gicp"
+    declare_parameter("registration_method", "gicp"); // "ndt" or "gicp"
     declare_parameter("score_threshold", 2.5);
 
     // NDT 参数

@@ -18,7 +18,7 @@ manual_initialization_node:
     gicp_max_correspondence_distance: 1.0  # GICP 最大对应距离（米）
 
     # 通用参数
-    score_threshold: 2.5        # 配准成功阈值（fitness score 低于此值认为成功）
+    score_threshold: 2.0        # 配准成功阈值（fitness score 低于此值认为成功）
 
     # 点云滤波参数
     voxel_leaf_size: 0.15        # 扫描点云体素大小（米）

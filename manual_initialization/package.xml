@@ -21,6 +21,7 @@
     <depend>pcl_conversions</depend>
     <depend>rosidl_default_generators</depend>
     <depend>ndt_omp</depend>
+    <depend>small_gicp</depend>
     <depend>cv_bridge</depend>
     <depend>std_srvs</depend>
 

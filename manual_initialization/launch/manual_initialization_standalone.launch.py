@@ -57,7 +57,7 @@ def generate_launch_description():
 
     map_pcd_arg = DeclareLaunchArgument(
         'map_pcd',
-        default_value='/home/steve/map_data/map_geoscan/1F/20251226_105050/global_map.pcd',
+        default_value='/home/steve/map_data/map_geoscan/103/global_map.pcd',
         description='Path to global map PCD file'
     )
 
@@ -70,7 +70,7 @@ def generate_launch_description():
     # Include TF tree launch file - 统一TF管理
     localizer_pkg_share = FindPackageShare('localizer')
     tf_tree_launch_file = PathJoinSubstitution([
-        localizer_pkg_share, 'tf', 'casbot_tf_tree.launch.py'
+        localizer_pkg_share, 'tf', 'airy_tf_tree.launch.py'
     ])
     tf_tree_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(tf_tree_launch_file),

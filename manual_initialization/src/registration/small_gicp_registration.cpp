@@ -9,25 +9,17 @@
 
 namespace finder_localization {
 
-SmallGicpRegistration::SmallGicpRegistration(const SmallGicpConfig& config) : config_(config) {}
+SmallGicpRegistration::SmallGicpRegistration(const SmallGicpConfig &config) : config_(config) {}
 
-void SmallGicpRegistration::updateConfig(const SmallGicpConfig& config) {
-  config_ = config;
-}
+void SmallGicpRegistration::updateConfig(const SmallGicpConfig &config) { config_ = config; }
 
-std::string SmallGicpRegistration::getName() const {
-  return "Small" + config_.type;
-}
+std::string SmallGicpRegistration::getName() const { return "Small" + config_.type; }
 
-void SmallGicpRegistration::setTarget(const PointCloud::Ptr& target) {
-  target_ = target;
-}
+void SmallGicpRegistration::setTarget(const PointCloud::Ptr &target) { target_ = target; }
 
-void SmallGicpRegistration::setSource(const PointCloud::Ptr& source) {
-  source_ = source;
-}
+void SmallGicpRegistration::setSource(const PointCloud::Ptr &source) { source_ = source; }
 
-RegistrationResult SmallGicpRegistration::align(const Eigen::Matrix4f& initial_guess) {
+RegistrationResult SmallGicpRegistration::align(const Eigen::Matrix4f &initial_guess) {
   RegistrationResult result;
   result.transform = initial_guess;
 
@@ -53,7 +45,7 @@ RegistrationResult SmallGicpRegistration::align(const Eigen::Matrix4f& initial_g
   reg.setCorrespondenceRandomness(config_.num_neighbors);
   reg.setMaxCorrespondenceDistance(config_.max_correspondence_distance);
   reg.setTransformationEpsilon(config_.transformation_epsilon);
-  reg.setRotationEpsilon(config_.rotation_epsilon * M_PI / 180.0);  // Convert to radians
+  reg.setRotationEpsilon(config_.rotation_epsilon * M_PI / 180.0); // Convert to radians
   reg.setVerbosity(config_.verbose);
 
   if (config_.type == "VGICP") {
@@ -78,7 +70,7 @@ RegistrationResult SmallGicpRegistration::align(const Eigen::Matrix4f& initial_g
     pcl::transformPointCloud(*source_, *result.aligned_cloud, result.transform);
 
     std::cout << "[" << getName() << "] Converged: YES" << std::endl;
-    std::cout << "  Fitness score: " << result.fitness_score << std::endl;
+    std::cout << "  Fitness score: " << result.fitness_score << " success threshold: " << score_threshold_ << std::endl;
     std::cout << "  Iterations: " << reg.getRegistrationResult().iterations << std::endl;
 
     if (result.fitness_score < score_threshold_) {
@@ -95,4 +87,4 @@ RegistrationResult SmallGicpRegistration::align(const Eigen::Matrix4f& initial_g
   return result;
 }
 
-}  // namespace finder_localization
+} // namespace finder_localization

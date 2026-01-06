@@ -151,8 +151,8 @@ Visualization Manager:
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
-      Line Style: Lines
-      Line Width: 10
+      Line Style: Billboards
+      Line Width: 0.10000000149011612
       Name: DLIO_Path
       Offset:
         X: 0
@@ -217,7 +217,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 5.797455310821533
+      Distance: 8.861574172973633
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -235,7 +235,7 @@ Visualization Manager:
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.2853970527648926
+      Yaw: 3.2303969860076904
     Saved: ~
 Window Geometry:
   Displays:

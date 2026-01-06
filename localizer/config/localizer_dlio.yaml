@@ -1,6 +1,6 @@
 # Localizer config for DLIO (Direct LiDAR-Inertial Odometry)
 cloud_topic: /rslidar_points
-odom_topic: /direct_odometry/pose
+pose_topic: /direct_odometry/pose
 map_frame: map
 local_frame: odom
 update_hz: 1.0

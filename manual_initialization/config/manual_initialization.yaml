@@ -1,0 +1,21 @@
+manual_initialization_node:
+  ros__parameters:
+    # 搜索参数
+    search_radius: 2.0           # XY 平面搜索半径（米）
+    yaw_search_range_deg: 90.0   # 航向角搜索范围（度，±范围）
+
+    # NDT 配准参数
+    use_multiscale: true         # 是否使用多尺度配准（推荐开启）
+    ndt_resolution: 1.5          # 单尺度模式的分辨率（use_multiscale=false 时使用）
+    ndt_max_iterations: 20       # 单尺度模式的迭代次数
+    num_threads: 4               # 并行线程数
+
+    # 验证参数
+    max_refinement_dist: 2.5     # 最大位置改进（米）
+    max_refinement_yaw_deg: 90.0 # 最大角度改进（度）
+
+    # 性能优化
+    early_stop_score: 0.1        # 早停阈值（0=禁用，>0时得分低于此值则提前退出）
+
+    # 坐标系
+    global_frame_id: "map"       # 全局坐标系

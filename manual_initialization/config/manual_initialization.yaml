@@ -9,7 +9,7 @@ manual_initialization_node:
     ndt_resolution: 1.0          # NDT 体素分辨率（米）
     ndt_max_iterations: 30       # 最大迭代次数
     num_threads: 4               # 并行线程数
-    score_threshold: 0.15        # 配准成功阈值（fitness score 低于此值认为成功）
+    score_threshold: 2.5        # 配准成功阈值（fitness score 低于此值认为成功）
 
     # 点云滤波参数
     voxel_leaf_size: 0.15        # 扫描点云体素大小（米）

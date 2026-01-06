@@ -3,7 +3,6 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <message_filters/synchronizer.h>
 #include <mutex>
-#include <nav_msgs/msg/odometry.hpp>
 #include <queue>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -23,7 +22,7 @@ using namespace std::chrono_literals;
 
 struct NodeConfig {
   std::string cloud_topic = "/fastlio2/body_cloud";
-  std::string odom_topic = "/fastlio2/lio_odom";
+  std::string pose_topic = "/fastlio2/pose";
   std::string map_frame = "map";
   std::string local_frame = "rslidar";
   double update_hz = 1.0;
@@ -36,6 +35,7 @@ struct NodeState {
   bool message_received = false;
   bool service_received = false;
   bool localize_success = false;
+  bool pose_refined = false;  // 位姿已经过优化，跳过 ICP 配准
   rclcpp::Time last_send_tf_time = rclcpp::Clock().now();
   builtin_interfaces::msg::Time last_message_time;
   CloudType::Ptr last_cloud = std::make_shared<CloudType>();
@@ -53,12 +53,12 @@ public:
     loadParameters();
     rclcpp::QoS qos = rclcpp::QoS(10);
     m_cloud_sub.subscribe(this, m_config.cloud_topic, qos.get_rmw_qos_profile());
-    m_odom_sub.subscribe(this, m_config.odom_topic, qos.get_rmw_qos_profile());
+    m_pose_sub.subscribe(this, m_config.pose_topic, qos.get_rmw_qos_profile());
 
     m_tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(*this);
 
-    m_sync = std::make_shared<message_filters::Synchronizer<message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, nav_msgs::msg::Odometry>>>(
-        message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, nav_msgs::msg::Odometry>(10), m_cloud_sub, m_odom_sub);
+    m_sync = std::make_shared<message_filters::Synchronizer<message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, geometry_msgs::msg::PoseStamped>>>(
+        message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, geometry_msgs::msg::PoseStamped>(10), m_cloud_sub, m_pose_sub);
     m_sync->setAgePenalty(0.1);
     m_sync->registerCallback(std::bind(&LocalizerNode::syncCB, this, std::placeholders::_1, std::placeholders::_2));
     m_localizer = std::make_shared<ICPLocalizer>(m_localizer_config);
@@ -68,8 +68,9 @@ public:
     m_map_cloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("map_cloud", 10);
     m_pose_pub = this->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 10);
 
-    // Subscribe to /initialpose from RViz
-    m_initialpose_sub = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10, std::bind(&LocalizerNode::initialposeCB, this, std::placeholders::_1));
+    // Subscribe to /refined_initialpose from manual_initialization node
+    // The pose is already refined, so we skip ICP alignment and use it directly
+    m_initialpose_sub = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/refined_initialpose", 10, std::bind(&LocalizerNode::initialposeCB, this, std::placeholders::_1));
 
     // Subscribe to /globalmap for map loading
     m_globalmap_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("/globalmap", rclcpp::QoS(1).transient_local(), std::bind(&LocalizerNode::globalmapCB, this, std::placeholders::_1));
@@ -89,7 +90,7 @@ public:
     RCLCPP_INFO(this->get_logger(), "LOAD FROM YAML CONFIG PATH: %s", config_path.c_str());
 
     m_config.cloud_topic = config["cloud_topic"].as<std::string>();
-    m_config.odom_topic = config["odom_topic"].as<std::string>();
+    m_config.pose_topic = config["pose_topic"].as<std::string>();
     m_config.map_frame = config["map_frame"].as<std::string>();
     m_config.local_frame = config["local_frame"].as<std::string>();
     m_config.update_hz = config["update_hz"].as<double>();
@@ -119,7 +120,7 @@ public:
   /// @note 该函数用里程计作为先验并用 ICP 修正（几何复合式“融合”），但不进行协方差/滤波层面的统计融合。
   void timerCB() {
     if (!m_state.message_received) {
-      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Have not received fastlio2 odometry data, start fast-lio2 first.");
+      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Have not received odometry data, start lio first.");
       return;
     }
     rclcpp::Duration diff = rclcpp::Clock().now() - m_state.last_send_tf_time;
@@ -134,13 +135,19 @@ public:
     m_state.last_send_tf_time = rclcpp::Clock().now();
 
     M4F initial_guess = M4F::Identity();
+    bool skip_alignment = false;
+
     if (m_state.service_received) {
       std::lock_guard<std::mutex>(m_state.service_mutex);
       initial_guess = m_state.initial_guess;
-      RCLCPP_INFO(get_logger(), "init with rviz initial pose.");
-      // m_state.service_received = false;
+      skip_alignment = m_state.pose_refined;  // 已优化的位姿跳过配准
+      if (skip_alignment) {
+        RCLCPP_INFO(get_logger(), "Using refined initial pose directly (skip ICP alignment).");
+      } else {
+        RCLCPP_INFO(get_logger(), "init with rviz initial pose.");
+      }
     } else {
-      RCLCPP_INFO(get_logger(), "estimate with fastlio2 odom.");
+      RCLCPP_INFO(get_logger(), "estimate with odometry pose.");
       std::lock_guard<std::mutex>(m_state.message_mutex);
       initial_guess.block<3, 3>(0, 0) = (m_state.last_offset_r * m_state.last_r).cast<float>();
       initial_guess.block<3, 1>(0, 3) = (m_state.last_offset_r * m_state.last_t + m_state.last_offset_t).cast<float>();
@@ -154,19 +161,32 @@ public:
       current_local_r = m_state.last_r;
       current_local_t = m_state.last_t;
       current_time = m_state.last_message_time;
-      m_localizer->setInput(m_state.last_cloud);
+      if (!skip_alignment) {
+        m_localizer->setInput(m_state.last_cloud);
+      }
     }
 
-    bool result = m_localizer->align(initial_guess);
+    bool result = false;
+    if (skip_alignment) {
+      // 位姿已优化，直接使用，不进行 ICP 配准
+      result = true;
+    } else {
+      result = m_localizer->align(initial_guess);
 
-    // Log diagnostics from ICPLocalizer (rough/refine fitness and convergence)
-    double rough_f = m_localizer->last_rough_fitness();
-    double refine_f = m_localizer->last_refine_fitness();
-    bool rough_conv = m_localizer->last_rough_converged();
-    bool refine_conv = m_localizer->last_refine_converged();
+      // Log diagnostics from ICPLocalizer (rough/refine fitness and convergence)
+      double rough_f = m_localizer->last_rough_fitness();
+      double refine_f = m_localizer->last_refine_fitness();
+      bool rough_conv = m_localizer->last_rough_converged();
+      bool refine_conv = m_localizer->last_refine_converged();
+
+      if (result) {
+        RCLCPP_INFO(get_logger(), "Localization success: rough_conv=%d rough_f=%.4f refine_conv=%d refine_f=%.4f", (int)rough_conv, rough_f, (int)refine_conv, refine_f);
+      } else {
+        RCLCPP_WARN(get_logger(), "Localization failed: rough_conv=%d rough_f=%.4f refine_conv=%d refine_f=%.4f", (int)rough_conv, rough_f, (int)refine_conv, refine_f);
+      }
+    }
 
     if (result) {
-      RCLCPP_INFO(get_logger(), "Localization success: rough_conv=%d rough_f=%.4f refine_conv=%d refine_f=%.4f", (int)rough_conv, rough_f, (int)refine_conv, refine_f);
       M3D map_body_r = initial_guess.block<3, 3>(0, 0).cast<double>();
       V3D map_body_t = initial_guess.block<3, 1>(0, 3).cast<double>();
       m_state.last_offset_r = map_body_r * current_local_r.transpose();
@@ -175,38 +195,41 @@ public:
         std::lock_guard<std::mutex>(m_state.service_mutex);
         m_state.localize_success = true;
         m_state.service_received = false;
+        m_state.pose_refined = false;  // 重置标志
       }
-    } else {
-      RCLCPP_WARN(get_logger(), "Localization failed: rough_conv=%d rough_f=%.4f refine_conv=%d refine_f=%.4f", (int)rough_conv, rough_f, (int)refine_conv, refine_f);
     }
     sendBroadCastTF(current_time);
     publishMapCloud(current_time);
     publishPose(current_time, current_local_r, current_local_t);
   }
 
-  /// @brief 同步回调：接收并处理里程计发布的消息与点云
+  /// @brief 同步回调：接收并处理位姿消息与点云
   /// @details
-  /// - 由 `message_filters::Synchronizer` 调用，保证接收到的 `PointCloud2` 与 `Odometry` 在时间上近似对齐；
+  /// - 由 `message_filters::Synchronizer` 调用，保证接收到的 `PointCloud2` 与 `PoseStamped` 在时间上近似对齐；
   /// - 在 `message_mutex` 保护下：
   ///     * 将点云转换为 PCL 格式并保存到 `m_state.last_cloud`；
-  ///     * 从里程计中提取旋转矩阵 `last_r` 与平移 `last_t`；
+  ///     * 从位姿消息中提取旋转矩阵 `last_r` 与平移 `last_t`；
   ///     * 记录该消息的时间戳 `last_message_time`；
-  ///     * 首次接收消息时标记 `message_received=true` 并设置 `m_config.local_frame` 为里程计的 frame id。
+  ///     * 首次接收消息时标记 `message_received=true` 并设置 `m_config.local_frame` 为位姿消息的 frame id。
   /// - 这些状态被 `timerCB` 使用作初始猜测与配准输入（主循环会基于此进行 ICP 配准或仅广播 TF）。
   /// @param cloud_msg 输入点云消息（sensor_msgs::msg::PointCloud2）
-  /// @param odom_msg 与点云同步的里程计消息（nav_msgs::msg::Odometry）
-  void syncCB(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &cloud_msg, const nav_msgs::msg::Odometry::ConstSharedPtr &odom_msg) {
+  /// @param pose_msg 与点云同步的位姿消息（geometry_msgs::msg::PoseStamped）
+  void syncCB(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &cloud_msg, const geometry_msgs::msg::PoseStamped::ConstSharedPtr &pose_msg) {
+    // 未收到初始位姿或定位成功前不处理消息
+    if (!m_state.service_received && !m_state.localize_success) {
+      return;
+    }
 
     std::lock_guard<std::mutex>(m_state.message_mutex);
 
     pcl::fromROSMsg(*cloud_msg, *m_state.last_cloud);
 
-    m_state.last_r = Eigen::Quaterniond(odom_msg->pose.pose.orientation.w, odom_msg->pose.pose.orientation.x, odom_msg->pose.pose.orientation.y, odom_msg->pose.pose.orientation.z).toRotationMatrix();
-    m_state.last_t = V3D(odom_msg->pose.pose.position.x, odom_msg->pose.pose.position.y, odom_msg->pose.pose.position.z);
+    m_state.last_r = Eigen::Quaterniond(pose_msg->pose.orientation.w, pose_msg->pose.orientation.x, pose_msg->pose.orientation.y, pose_msg->pose.orientation.z).toRotationMatrix();
+    m_state.last_t = V3D(pose_msg->pose.position.x, pose_msg->pose.position.y, pose_msg->pose.position.z);
     m_state.last_message_time = cloud_msg->header.stamp;
     if (!m_state.message_received) {
       m_state.message_received = true;
-      m_config.local_frame = odom_msg->header.frame_id;
+      m_config.local_frame = pose_msg->header.frame_id;
     }
   }
 
@@ -263,6 +286,7 @@ public:
       m_state.initial_guess.block<3, 1>(0, 3) = V3F(x, y, z);
       m_state.service_received = true;
       m_state.localize_success = false;
+      m_state.pose_refined = false;  // 服务调用的位姿需要 ICP 配准
     }
 
     response->success = true;
@@ -314,10 +338,11 @@ public:
       m_state.initial_guess(2, 3) = static_cast<float>(msg->pose.pose.position.z);
       m_state.service_received = true;
       m_state.localize_success = false;
+      m_state.pose_refined = true;  // 来自 manual_initialization 的位姿已经过优化
     }
 
-    RCLCPP_INFO(this->get_logger(), "Received initial pose: (%.2f, %.2f, %.2f)", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
-    RCLCPP_INFO(this->get_logger(), "Initial pose set, waiting for localization...");
+    RCLCPP_INFO(this->get_logger(), "Received refined initial pose: (%.2f, %.2f, %.2f)", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
+    RCLCPP_INFO(this->get_logger(), "Refined pose set, skip ICP alignment.");
   }
 
   void publishMapCloud(builtin_interfaces::msg::Time &time) {
@@ -363,9 +388,9 @@ private:
   ICPConfig m_localizer_config;
   std::shared_ptr<ICPLocalizer> m_localizer;
   message_filters::Subscriber<sensor_msgs::msg::PointCloud2> m_cloud_sub;
-  message_filters::Subscriber<nav_msgs::msg::Odometry> m_odom_sub;
+  message_filters::Subscriber<geometry_msgs::msg::PoseStamped> m_pose_sub;
   rclcpp::TimerBase::SharedPtr m_timer;
-  std::shared_ptr<message_filters::Synchronizer<message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, nav_msgs::msg::Odometry>>> m_sync;
+  std::shared_ptr<message_filters::Synchronizer<message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::PointCloud2, geometry_msgs::msg::PoseStamped>>> m_sync;
   std::shared_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster;
   rclcpp::Service<interface::srv::Relocalize>::SharedPtr m_reloc_srv;
   rclcpp::Service<interface::srv::IsValid>::SharedPtr m_reloc_check_srv;

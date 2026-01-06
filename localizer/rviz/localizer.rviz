@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /DLIO_Path1
       Splitter Ratio: 0.4646739065647125
     Tree Height: 1166
   - Class: rviz_common/Selection
@@ -171,6 +170,26 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /direct_odometry/path
       Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz_default_plugins/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Arrow
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /localizer/pose
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -217,25 +236,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 8.861574172973633
+      Distance: 89.10836029052734
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.712003231048584
-        Y: 0.36616215109825134
-        Z: 1.5946370363235474
+        X: -34.962860107421875
+        Y: -3.8703713417053223
+        Z: 3.6575636863708496
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.5147963762283325
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.2303969860076904
+      Yaw: 0.19539768993854523
     Saved: ~
 Window Geometry:
   Displays:

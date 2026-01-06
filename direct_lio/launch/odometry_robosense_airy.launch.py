@@ -63,13 +63,13 @@ def generate_launch_description():
             ('body_cloud', 'direct_odometry/body_cloud'),
             ('sparse_map', 'direct_odometry/sparse_map'),
         ],
-    )    
+    )
 
     # Include TF tree launch file from localizer package
     localizer_pkg = FindPackageShare('localizer')
     tf_tree_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
-            PathJoinSubstitution([localizer_pkg, 'tf', 'airy_tf_tree.launch.py'])
+            PathJoinSubstitution([localizer_pkg, 'tf', 'casbot_tf_tree.launch.py'])
         ])
     )
 

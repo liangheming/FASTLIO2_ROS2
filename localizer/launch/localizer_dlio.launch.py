@@ -2,6 +2,12 @@
 """
 Localizer launch file using DLIO (Direct LiDAR-Inertial Odometry)
 for RoboSense Airy LiDAR
+
+工作流程:
+  1. DLIO 提供里程计
+  2. RViz 发布 /initialpose
+  3. manual_initialization_node 优化初始位姿，发布 /refined_initialpose
+  4. localizer_node 接收优化后的位姿，开始跟踪定位
 """
 import os
 import launch
@@ -18,6 +24,7 @@ def generate_launch_description():
     localizer_pkg = FindPackageShare("localizer")
     dlio_pkg = FindPackageShare("dlio")
     map_server_pkg = FindPackageShare("map_server")
+    manual_init_pkg = FindPackageShare("manual_initialization")
 
     # Launch arguments
     use_sim_time_arg = DeclareLaunchArgument(
@@ -28,7 +35,9 @@ def generate_launch_description():
 
     map_pcd_arg = DeclareLaunchArgument(
         'map_pcd',
-        default_value='/home/steve/map_data/map_geoscan/B1/20251225_191653/global_map.pcd',
+       #default_value='/home/steve/map_data/map_geoscan/B1/20251225_191653/global_map.pcd',
+       #default_value='/home/steve/map_data/map_geoscan/103/global_map.pcd',
+        default_value='/home/steve/map_data/map_geoscan/1F/20251226_105050/global_map.pcd',
         description='Path to global map PCD file'
     )
 
@@ -63,10 +72,13 @@ def generate_launch_description():
     dlio_params_yaml_path = PathJoinSubstitution(
         [dlio_pkg, 'config', 'params.yaml']
     )
+    manual_init_config_path = PathJoinSubstitution(
+        [manual_init_pkg, 'config', 'manual_initialization.yaml']
+    )
 
     # Include TF tree launch file
     tf_launch_path = PathJoinSubstitution(
-        [localizer_pkg, "tf", "airy_tf_tree.launch.py"]
+        [localizer_pkg, "tf", "casbot_tf_tree.launch.py"]
     )
     airy_tf_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(tf_launch_path),
@@ -98,7 +110,7 @@ def generate_launch_description():
         ],
     )
 
-    # Global map server
+    # Global map server (shared by manual_initialization and localizer)
     globalmap_server_node = launch_ros.actions.Node(
         package="map_server",
         executable="globalmap_server_node",
@@ -113,7 +125,28 @@ def generate_launch_description():
         ],
     )
 
+    # Manual Initialization Node
+    # 接收 RViz /initialpose，优化后发布 /refined_initialpose
+    manual_init_node = launch_ros.actions.Node(
+        package='manual_initialization',
+        executable='manual_initialization_node',
+        name='manual_initialization_node',
+        output='screen',
+        parameters=[
+            manual_init_config_path,
+            {'use_sim_time': LaunchConfiguration('use_sim_time')}
+        ],
+        remappings=[
+            ('initialpose', '/initialpose'),
+            ('cloud', LaunchConfiguration('pointcloud_topic')),
+            ('map', '/globalmap'),
+            ('refined_initialpose', '/refined_initialpose'),
+            ('aligned_cloud', '/aligned_cloud'),
+        ]
+    )
+
     # Localizer node
+    # 订阅 /refined_initialpose，跳过 ICP 配准，直接使用优化后的位姿
     localizer_node = launch_ros.actions.Node(
         package="localizer",
         namespace="localizer",
@@ -151,6 +184,7 @@ def generate_launch_description():
         # Nodes
         dlio_odom_node,
         globalmap_server_node,
+        manual_init_node,
         localizer_node,
         rviz_node,
     ])

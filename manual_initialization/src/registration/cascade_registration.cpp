@@ -125,26 +125,37 @@ RegistrationResult CascadeRegistration::align(const Eigen::Matrix4f& initial_gue
   std::cout << "  Fitness score: " << fine_result.fitness_score << std::endl;
 
   // ========== 结果评估 ==========
+  // 采用两级阈值策略判断成功：
+  //   1. 绝对阈值：fitness_score < score_threshold_ -> 直接成功 (SUCCESS)
+  //   2. 相对改进：即使 fitness_score >= score_threshold_，只要精配准收敛且
+  //      比粗配准有改进 (fine_score < coarse_score)，也算成功 (SUCCESS improved)
+  //
+  // 设计理由：实际场景中，点云质量、遮挡、动态物体等因素可能导致无法达到理想阈值，
+  // 但只要配准结果相比初始猜测有显著改善，仍然是有价值的结果。
   result.has_converged = fine_result.has_converged;
   result.fitness_score = fine_result.fitness_score;
   result.transform = fine_result.transform;
   result.aligned_cloud = fine_result.aligned_cloud;
 
   if (fine_result.success) {
+    // 情况1：精配准直接成功 (fitness_score < score_threshold_)
     result.success = true;
     result.message = "Cascade registration successful";
     std::cout << "\n[Cascade] SUCCESS" << std::endl;
   } else if (fine_result.has_converged && coarse_result.success) {
-    // 精配准收敛但 score 较高，检查是否比粗配准改善
+    // 情况2：精配准收敛但 fitness_score >= score_threshold_，检查相对改进
     if (fine_result.fitness_score < coarse_result.fitness_score) {
+      // 精配准比粗配准更好，接受结果
       result.success = true;
       result.message = "Cascade registration successful (improved from coarse)";
       std::cout << "\n[Cascade] SUCCESS (improved)" << std::endl;
     } else {
+      // 精配准没有改善，拒绝结果
       result.message = "Fine registration did not improve: " + std::to_string(fine_result.fitness_score);
       std::cout << "\n[Cascade] FAILED - no improvement" << std::endl;
     }
   } else {
+    // 情况3：精配准未收敛或粗配准失败
     result.message = fine_result.message;
     std::cout << "\n[Cascade] FAILED - " << result.message << std::endl;
   }

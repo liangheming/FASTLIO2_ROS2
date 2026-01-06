@@ -3,6 +3,7 @@
 // ============================================================
 
 #include "manual_initialization_node.hpp"
+#include <cmath>
 
 bool ManualInitializationNode::transformAndFilterPC(const sensor_msgs::msg::PointCloud2::SharedPtr &input, pcl::PointCloud<pcl::PointXYZI>::Ptr &output) {
   try {
@@ -101,8 +102,8 @@ void ManualInitializationNode::cloudCallback(const sensor_msgs::msg::PointCloud2
   }).detach();
 }
 
-OptimizationResult ManualInitializationNode::performOptimization(const sensor_msgs::msg::PointCloud2::SharedPtr &cloud_msg) {
-  OptimizationResult result;
+RegistrationResult ManualInitializationNode::performOptimization(const sensor_msgs::msg::PointCloud2::SharedPtr &cloud_msg) {
+  RegistrationResult result;
 
   // 1. 转换点云到 base_link 坐标系并滤波
   auto source_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
@@ -123,19 +124,11 @@ OptimizationResult ManualInitializationNode::performOptimization(const sensor_ms
   RCLCPP_INFO(get_logger(), "Target cloud (map frame): %zu points", target_cloud->size());
   RCLCPP_INFO(get_logger(), "Initial guess T_map_baselink: [%.2f, %.2f, %.2f]", last_initial_guess_(0, 3), last_initial_guess_(1, 3), last_initial_guess_(2, 3));
 
-  // 3. 发布调试点云（将 source 用 initial_guess 变换到 map frame 用于可视化）
-  // auto source_in_map = std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
-  // pcl::transformPointCloud(*source_cloud, *source_in_map, last_initial_guess_);
-  // publishDebugClouds(source_in_map, target_cloud);
+  // 3. 设置点云并执行配准
+  registration_->setSource(source_cloud);
+  registration_->setTarget(target_cloud);
 
-  // 4. 可视化搜索区域
-  publishSearchGridVisualization(last_initial_guess_);
-
-  // 5. 调用简单优化
-  // source_cloud 在 base_link frame，target_cloud 在 map frame
-  // initial_guess 是 T_map_baselink
-  // NDT 配准：找到最优的 T_map_baselink 使得 source_cloud 对齐到 target_cloud
-  return initializer_->simpleOptimize(source_cloud, target_cloud, last_initial_guess_);
+  return registration_->align(last_initial_guess_);
 }
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr ManualInitializationNode::extractLocalMap(const Eigen::Matrix4f &center) {
@@ -147,7 +140,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr ManualInitializationNode::extractLocalMap(c
   double cx = center(0, 3);
   double cy = center(1, 3);
   double cz = center(2, 3);
-  double radius = config_.search_radius + 30.0;
+  double radius = local_map_radius_;
 
   // 1. 距离提取
   for (const auto &pt : *map_cloud_) {

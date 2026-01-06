@@ -20,9 +20,19 @@
 namespace finder_localization {
 
 /**
+ * @brief 配准方法枚举
+ */
+enum class RegistrationMethod {
+  NDT,   // Normal Distributions Transform
+  GICP,  // Generalized ICP
+};
+
+/**
  * @brief 手动初始化优化配置
  */
 struct ManualInitializerConfig {
+  // 配准方法选择
+  RegistrationMethod registration_method = RegistrationMethod::NDT;
   // 搜索范围参数
   double search_radius = 2.0;          // XY 平面搜索半径（米）
   double yaw_search_range = 0.7853975; // 航向角搜索范围（弧度，±90度）
@@ -38,6 +48,13 @@ struct ManualInitializerConfig {
   // 多尺度配准参数（use_multiscale=true 时使用）
   std::vector<double> multiscale_resolutions = {3.0, 1.5, 1.0}; // 粗->中->精
   std::vector<int> multiscale_iterations = {15, 20, 25};        // 各尺度迭代次数
+
+  // GICP 配准参数
+  int gicp_max_iterations = 50;              // GICP 最大迭代次数
+  double gicp_transform_epsilon = 1e-6;      // GICP 变换收敛阈值
+  double gicp_euclidean_fitness_epsilon = 1e-6; // GICP 欧氏适应度阈值
+  int gicp_correspondence_randomness = 20;   // GICP 对应点随机性
+  double gicp_max_correspondence_distance = 1.0; // GICP 最大对应距离
 
   // 验证参数
   double max_refinement_dist = 2.5;  // 允许的最大位置改进距离（米）

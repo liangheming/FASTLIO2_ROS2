@@ -59,7 +59,8 @@ include_directories(
 # Manual initialization node
 add_executable(manual_initialization_node
   manual_initialization_node.cpp
-  src/manual_initializer.cpp)
+  src/registration/ndt_registration.cpp
+  src/registration/gicp_registration.cpp)
 target_link_libraries(manual_initialization_node ${pcl_LIBRARIES})
 ament_target_dependencies(manual_initialization_node
   rclcpp

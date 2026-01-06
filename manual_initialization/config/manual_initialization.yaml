@@ -4,11 +4,20 @@ manual_initialization_node:
     search_radius: 2.0           # XY 平面搜索半径（米）
     yaw_search_range_deg: 90.0   # 航向角搜索范围（度，±范围）
 
-    # NDT 配准参数
+    # 配准方法选择: "ndt" 或 "gicp"
+    registration_method: "gicp"
+
+    # NDT 配准参数 (registration_method: "ndt" 时使用)
     use_multiscale: false        # 是否使用多尺度配准（推荐开启）
     ndt_resolution: 1.0          # NDT 体素分辨率（米）
     ndt_max_iterations: 30       # 最大迭代次数
     num_threads: 4               # 并行线程数
+
+    # GICP 配准参数 (registration_method: "gicp" 时使用)
+    gicp_max_iterations: 50      # GICP 最大迭代次数
+    gicp_max_correspondence_distance: 1.0  # GICP 最大对应距离（米）
+
+    # 通用参数
     score_threshold: 2.5        # 配准成功阈值（fitness score 低于此值认为成功）
 
     # 点云滤波参数

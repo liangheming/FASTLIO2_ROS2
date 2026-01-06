@@ -39,7 +39,9 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
-#include "manual_initializer.hpp"
+#include "registration/registration_base.hpp"
+#include "registration/ndt_registration.hpp"
+#include "registration/gicp_registration.hpp"
 
 using namespace finder_localization;
 
@@ -52,11 +54,8 @@ public:
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-    // 加载参数
+    // 加载参数并创建配准实例
     loadParameters();
-
-    // 创建算法实例
-    initializer_ = std::make_unique<ManualInitializer>(config_);
 
     // 创建订阅
     initializeSubscribers();
@@ -73,17 +72,18 @@ private:
   // ==================== 初始化方法 ====================
 
   void loadParameters() {
-    declare_parameter("search_radius", 2.0);
-    declare_parameter("yaw_search_range_deg", 90.0);
-    declare_parameter("use_multiscale", true);
-    declare_parameter("ndt_resolution", 1.5);
-    declare_parameter("ndt_max_iterations", 20);
+    // 配准方法选择
+    declare_parameter("registration_method", "gicp");  // "ndt" or "gicp"
+    declare_parameter("score_threshold", 2.5);
+
+    // NDT 参数
+    declare_parameter("ndt_resolution", 1.0);
+    declare_parameter("ndt_max_iterations", 30);
     declare_parameter("num_threads", 4);
-    declare_parameter("global_frame_id", "map");
-    declare_parameter("max_refinement_dist", 2.5);
-    declare_parameter("max_refinement_yaw_deg", 90.0);
-    declare_parameter("early_stop_score", 0.1);
-    declare_parameter("score_threshold", 0.15);
+
+    // GICP 参数
+    declare_parameter("gicp_max_iterations", 50);
+    declare_parameter("gicp_max_correspondence_distance", 1.0);
 
     // 点云滤波参数
     declare_parameter("voxel_leaf_size", 0.15);
@@ -93,45 +93,44 @@ private:
 
     // 地图处理参数
     declare_parameter("map_voxel_size", 0.5);
+    declare_parameter("local_map_radius", 30.0);
 
-    config_.search_radius = get_parameter("search_radius").as_double();
-    config_.yaw_search_range = get_parameter("yaw_search_range_deg").as_double() * M_PI / 180.0;
-    config_.use_multiscale = get_parameter("use_multiscale").as_bool();
-    config_.ndt_resolution = get_parameter("ndt_resolution").as_double();
-    config_.ndt_max_iterations = get_parameter("ndt_max_iterations").as_int();
-    config_.num_threads = get_parameter("num_threads").as_int();
-    config_.max_refinement_dist = get_parameter("max_refinement_dist").as_double();
-    config_.max_refinement_yaw = get_parameter("max_refinement_yaw_deg").as_double() * M_PI / 180.0;
-    config_.early_stop_score = get_parameter("early_stop_score").as_double();
-    config_.score_threshold = get_parameter("score_threshold").as_double();
+    // 坐标系
+    declare_parameter("global_frame_id", "map");
+
+    // 读取参数
+    registration_method_ = get_parameter("registration_method").as_string();
+    score_threshold_ = get_parameter("score_threshold").as_double();
 
     voxel_leaf_size_ = get_parameter("voxel_leaf_size").as_double();
     scan_max_range_ = get_parameter("scan_max_range").as_double();
     scan_min_range_ = get_parameter("scan_min_range").as_double();
     min_scan_points_ = get_parameter("min_scan_points").as_int();
     map_voxel_size_ = get_parameter("map_voxel_size").as_double();
-
+    local_map_radius_ = get_parameter("local_map_radius").as_double();
     global_frame_id_ = get_parameter("global_frame_id").as_string();
 
-    if (config_.max_refinement_dist < config_.search_radius) {
-      RCLCPP_WARN(get_logger(), "max_refinement_dist (%.2f) < search_radius (%.2f)", config_.max_refinement_dist, config_.search_radius);
-      config_.max_refinement_dist = config_.search_radius + 0.5;
+    // 根据方法创建配准实例
+    if (registration_method_ == "gicp" || registration_method_ == "GICP") {
+      GicpConfig config;
+      config.max_iterations = get_parameter("gicp_max_iterations").as_int();
+      config.max_correspondence_distance = get_parameter("gicp_max_correspondence_distance").as_double();
+      registration_ = std::make_shared<GicpRegistration>(config);
+    } else {
+      NdtConfig config;
+      config.resolution = get_parameter("ndt_resolution").as_double();
+      config.max_iterations = get_parameter("ndt_max_iterations").as_int();
+      config.num_threads = get_parameter("num_threads").as_int();
+      registration_ = std::make_shared<NdtRegistration>(config);
     }
 
-    if (config_.max_refinement_yaw < config_.yaw_search_range) {
-      RCLCPP_WARN(get_logger(), "max_refinement_yaw (%.2f) < yaw_search_range (%.2f)", config_.max_refinement_yaw, config_.yaw_search_range);
-      config_.max_refinement_yaw = config_.yaw_search_range + 0.5;
-    }
+    registration_->setScoreThreshold(score_threshold_);
   }
 
   void printConfiguration() {
     RCLCPP_INFO(get_logger(), "========== Configuration ==========");
-    RCLCPP_INFO(get_logger(), "Search radius: %.2f m", config_.search_radius);
-    RCLCPP_INFO(get_logger(), "Yaw search range: %.1f deg", config_.yaw_search_range * 180.0 / M_PI);
-    RCLCPP_INFO(get_logger(), "NDT resolution: %.2f m", config_.ndt_resolution);
-    RCLCPP_INFO(get_logger(), "NDT max iterations: %d", config_.ndt_max_iterations);
-    RCLCPP_INFO(get_logger(), "Num threads: %d", config_.num_threads);
-    RCLCPP_INFO(get_logger(), "Score threshold: %.3f", config_.score_threshold);
+    RCLCPP_INFO(get_logger(), "Registration method: %s", registration_->getName().c_str());
+    RCLCPP_INFO(get_logger(), "Score threshold: %.3f", score_threshold_);
     RCLCPP_INFO(get_logger(), "Global frame: %s", global_frame_id_.c_str());
     RCLCPP_INFO(get_logger(), "--- Point Cloud Filtering ---");
     RCLCPP_INFO(get_logger(), "Voxel leaf size: %.2f m", voxel_leaf_size_);
@@ -139,6 +138,7 @@ private:
     RCLCPP_INFO(get_logger(), "Min scan points: %d", min_scan_points_);
     RCLCPP_INFO(get_logger(), "--- Map Processing ---");
     RCLCPP_INFO(get_logger(), "Map voxel size: %.2f m", map_voxel_size_);
+    RCLCPP_INFO(get_logger(), "Local map radius: %.1f m", local_map_radius_);
     RCLCPP_INFO(get_logger(), "===================================");
   }
 
@@ -153,7 +153,6 @@ private:
 
   void initializePublishers() {
     refined_pose_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("refined_initialpose", rclcpp::QoS(1).reliable());
-    search_grid_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("manual_init/search_grid", rclcpp::QoS(1));
 
     rclcpp::QoS latched_qos(10);
     latched_qos.transient_local();
@@ -215,13 +214,13 @@ private:
    */
   bool transformAndFilterPC(const sensor_msgs::msg::PointCloud2::SharedPtr &input, pcl::PointCloud<pcl::PointXYZI>::Ptr &output);
 
-  OptimizationResult performOptimization(const sensor_msgs::msg::PointCloud2::SharedPtr &cloud_msg);
+  RegistrationResult performOptimization(const sensor_msgs::msg::PointCloud2::SharedPtr &cloud_msg);
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr extractLocalMap(const Eigen::Matrix4f &center);
 
   // ==================== 发布方法 ====================
 
-  void publishAlignedCloud(const OptimizationResult &result) {
+  void publishAlignedCloud(const RegistrationResult &result) {
     if (!result.aligned_cloud || result.aligned_cloud->empty()) {
       RCLCPP_WARN(get_logger(), "No aligned cloud in result");
       return;
@@ -256,33 +255,7 @@ private:
     }
   }
 
-  void publishSearchGridVisualization(const Eigen::Matrix4f &center) {
-    visualization_msgs::msg::MarkerArray markers;
-
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = global_frame_id_;
-    marker.header.stamp = now();
-    marker.ns = "search_center";
-    marker.id = 0;
-    marker.type = visualization_msgs::msg::Marker::SPHERE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose.position.x = center(0, 3);
-    marker.pose.position.y = center(1, 3);
-    marker.pose.position.z = center(2, 3);
-    marker.scale.x = config_.search_radius * 2.0;
-    marker.scale.y = config_.search_radius * 2.0;
-    marker.scale.z = 0.1;
-    marker.color.r = 0.0;
-    marker.color.g = 0.5;
-    marker.color.b = 1.0;
-    marker.color.a = 0.2;
-    marker.lifetime = rclcpp::Duration::from_seconds(10.0);
-
-    markers.markers.push_back(marker);
-    search_grid_pub_->publish(markers);
-  }
-
-  geometry_msgs::msg::PoseWithCovarianceStamped createPoseMessage(const OptimizationResult &result) {
+  geometry_msgs::msg::PoseWithCovarianceStamped createPoseMessage(const RegistrationResult &result) {
     geometry_msgs::msg::PoseWithCovarianceStamped msg;
     msg.header.frame_id = global_frame_id_;
     msg.header.stamp = now();
@@ -309,9 +282,8 @@ private:
   }
 
 private:
-  // 算法实例
-  std::unique_ptr<ManualInitializer> initializer_;
-  ManualInitializerConfig config_;
+  // 配准算法实例
+  RegistrationBase::Ptr registration_;
 
   // ROS 接口
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initialpose_sub_;
@@ -319,7 +291,6 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr map_sub_;
 
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr refined_pose_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr search_grid_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr aligned_cloud_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr source_cloud_debug_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr target_cloud_debug_pub_;
@@ -335,6 +306,8 @@ private:
 
   // 参数
   std::string global_frame_id_;
+  std::string registration_method_;
+  double score_threshold_ = 2.5;
 
   // 点云滤波参数
   double voxel_leaf_size_ = 0.15;
@@ -344,6 +317,7 @@ private:
 
   // 地图处理参数
   double map_voxel_size_ = 0.5;
+  double local_map_radius_ = 30.0;
 
   // TF
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;

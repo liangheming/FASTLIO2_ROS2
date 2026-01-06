@@ -13,6 +13,7 @@
 #include <limits>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/registration/gicp.h>
 #include <pclomp/ndt_omp.h>
 
 namespace finder_localization {
@@ -382,36 +383,62 @@ OptimizationResult ManualInitializer::simpleOptimize(const pcl::PointCloud<pcl::
     return result;
   }
 
-  std::cout << "[ManualInitializer] Simple optimization (direct NDT)..." << std::endl;
+  std::string method_name = (config_.registration_method == RegistrationMethod::GICP) ? "GICP" : "NDT";
+  std::cout << "[ManualInitializer] Simple optimization (direct " << method_name << ")..." << std::endl;
   std::cout << "  Source cloud: " << source_cloud->size() << " points" << std::endl;
   std::cout << "  Target cloud: " << target_cloud->size() << " points" << std::endl;
   std::cout << "  Initial guess: [" << initial_guess(0, 3) << ", " << initial_guess(1, 3) << ", " << initial_guess(2, 3) << "]" << std::endl;
 
-  // 2. 配置 NDT
-  pclomp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
-  ndt.setResolution(config_.ndt_resolution);
-  ndt.setStepSize(config_.ndt_step_size);
-  ndt.setTransformationEpsilon(config_.ndt_transform_epsilon);
-  ndt.setMaximumIterations(config_.ndt_max_iterations);
-  ndt.setNumThreads(config_.num_threads);
-
-  // 3. 设置输入
-  ndt.setInputTarget(target_cloud);
-  ndt.setInputSource(source_cloud);
-
-  // 4. 执行配准
   pcl::PointCloud<pcl::PointXYZI> aligned;
-  ndt.align(aligned, initial_guess);
+
+  if (config_.registration_method == RegistrationMethod::GICP) {
+    // ===== GICP 配准 =====
+    pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI> gicp;
+    gicp.setMaximumIterations(config_.gicp_max_iterations);
+    gicp.setTransformationEpsilon(config_.gicp_transform_epsilon);
+    gicp.setEuclideanFitnessEpsilon(config_.gicp_euclidean_fitness_epsilon);
+    gicp.setCorrespondenceRandomness(config_.gicp_correspondence_randomness);
+    gicp.setMaxCorrespondenceDistance(config_.gicp_max_correspondence_distance);
+
+    gicp.setInputSource(source_cloud);
+    gicp.setInputTarget(target_cloud);
+
+    gicp.align(aligned, initial_guess);
+
+    result.evaluated_poses = 1;
+    result.has_converged = gicp.hasConverged();
+    result.fitness_score = gicp.getFitnessScore();
+
+    if (result.has_converged) {
+      result.converged_poses = 1;
+      result.transform = gicp.getFinalTransformation();
+    }
+  } else {
+    // ===== NDT 配准 =====
+    pclomp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
+    ndt.setResolution(config_.ndt_resolution);
+    ndt.setStepSize(config_.ndt_step_size);
+    ndt.setTransformationEpsilon(config_.ndt_transform_epsilon);
+    ndt.setMaximumIterations(config_.ndt_max_iterations);
+    ndt.setNumThreads(config_.num_threads);
+
+    ndt.setInputTarget(target_cloud);
+    ndt.setInputSource(source_cloud);
+
+    ndt.align(aligned, initial_guess);
+
+    result.evaluated_poses = 1;
+    result.has_converged = ndt.hasConverged();
+    result.fitness_score = ndt.getFitnessScore();
+
+    if (result.has_converged) {
+      result.converged_poses = 1;
+      result.transform = ndt.getFinalTransformation();
+    }
+  }
 
   // 5. 检查结果
-  result.evaluated_poses = 1;
-  result.has_converged = ndt.hasConverged();
-  result.fitness_score = ndt.getFitnessScore();
-
   if (result.has_converged) {
-    result.converged_poses = 1;
-    result.transform = ndt.getFinalTransformation();
-
     // 计算改进量
     computeImprovement(initial_guess, result.transform, result.position_improvement, result.yaw_improvement);
 
@@ -420,6 +447,7 @@ OptimizationResult ManualInitializer::simpleOptimize(const pcl::PointCloud<pcl::
     pcl::transformPointCloud(*source_cloud, *result.aligned_cloud, result.transform);
 
     std::cout << "[ManualInitializer] Simple optimization completed:" << std::endl;
+    std::cout << "  Method: " << method_name << std::endl;
     std::cout << "  Converged: YES" << std::endl;
     std::cout << "  Fitness score: " << result.fitness_score << " (threshold: " << config_.score_threshold << ")" << std::endl;
     std::cout << "  Final pose: [" << result.transform(0, 3) << ", " << result.transform(1, 3) << ", " << result.transform(2, 3) << "]" << std::endl;
@@ -429,7 +457,7 @@ OptimizationResult ManualInitializer::simpleOptimize(const pcl::PointCloud<pcl::
     // 检查 fitness score 是否满足阈值
     if (result.fitness_score < config_.score_threshold) {
       result.success = true;
-      result.message = "Simple optimization successful";
+      result.message = "Simple optimization successful (" + method_name + ")";
       std::cout << "  Result: SUCCESS (score < threshold)" << std::endl;
     } else {
       result.success = false;
@@ -438,8 +466,8 @@ OptimizationResult ManualInitializer::simpleOptimize(const pcl::PointCloud<pcl::
     }
   } else {
     result.converged_poses = 0;
-    result.message = "NDT failed to converge";
-    std::cout << "[ManualInitializer] Simple optimization FAILED: NDT did not converge" << std::endl;
+    result.message = method_name + " failed to converge";
+    std::cout << "[ManualInitializer] Simple optimization FAILED: " << method_name << " did not converge" << std::endl;
   }
 
   return result;

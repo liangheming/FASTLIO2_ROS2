@@ -18,6 +18,7 @@
   <depend>pcl_conversions</depend>
   <depend>livox_ros_driver2</depend>
   <depend>geometry_msgs</depend>
+  <depend>cv_bridge</depend>
   
 
   <test_depend>ament_lint_auto</test_depend>
